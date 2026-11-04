@@ -86,6 +86,9 @@ python -c "import torch; print(torch.cuda.is_available())"   # debe imprimir Tru
   Seguridad de Windows → Control de aplicaciones y navegador (decisión del usuario; puede no ser reversible sin
   reinstalar Windows).
 * En GPUs GTX 16xx la precisión mixta produce pérdida NaN: mantener `amp: false` (valor por defecto).
+* `ImportError: DLL load failed ... El nombre del archivo o la extensión es demasiado largo`: la ruta del
+  repositorio (y del `.venv` dentro de él) supera el límite de 260 caracteres de Windows. Clonar en una ruta más
+  corta (p. ej. `C:\proyectos\mamo-seg`) o habilitar las rutas largas de Windows.
 
 ## Datos
 
