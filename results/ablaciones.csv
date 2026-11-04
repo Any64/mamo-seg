@@ -1,0 +1,12 @@
+grupo,variante,parametro,valor,es_referencia,ejecucion,dice_unet_val,dice_unet_val_de,iou_unet_val,dice_prior_val,iou_prior_val,dice_clasico_val,frac_dice_lt_0_1_val,epocas,mejor_epoca,segundos_por_epoca
+(a) context (jitter 0.2),context2,context,2.0,False,abl_context2,0.8019,0.1329,0.6864,0.5311,0.3764,0.5394,0.0078,40,37,16.1
+(a) context (jitter 0.2),ref,context,3.0,True,main,0.7806,0.194,0.672,0.3445,0.2277,0.3476,,40,36,16.5
+(a) context (jitter 0.2),context4,context,4.0,False,abl_context4,0.7616,0.2131,0.6522,0.2067,0.1336,0.2272,0.0428,40,38,16.1
+(b) jitter (context 3),jitter0,jitter,0.0,False,abl_jitter0,0.8393,0.0888,0.7321,0.8573,0.7537,0.3436,0.0,26,16,16.2
+(b) jitter (context 3),jitter0.1,jitter,0.1,False,abl_jitter0.1,0.8254,0.1096,0.7161,0.6312,0.472,0.3507,0.0,40,40,16.1
+(b) jitter (context 3),ref,jitter,0.2,True,main,0.7806,0.194,0.672,0.3445,0.2277,0.3476,,40,36,16.5
+(b) jitter (context 3),jitter0.3,jitter,0.3,False,abl_jitter0.3,0.7531,0.2133,0.6412,0.1609,0.1038,0.3164,0.0389,40,38,16.0
+(c) canales base de la U-Net,ref,base_channels,16,True,main,0.7806,0.194,0.672,0.3445,0.2277,0.3476,,40,36,16.5
+(c) canales base de la U-Net,base32,base_channels,32,False,abl_base32,0.767,0.1803,0.6498,0.3445,0.2277,0.3476,0.0233,40,39,37.9
+(d) función de pérdida,ref,loss,bce_dice,True,main,0.7806,0.194,0.672,0.3445,0.2277,0.3476,,40,36,16.5
+(d) función de pérdida,dice_only,loss,dice,False,abl_dice_only,0.7666,0.1862,0.6512,0.3445,0.2277,0.3476,0.0195,40,31,16.0
