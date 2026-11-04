@@ -146,7 +146,10 @@ def per_sample_table(results: dict, data: dict) -> pd.DataFrame:
 def dice_by_shift(per_sample: pd.DataFrame, method: str = UNET, split: str = "test") -> pd.DataFrame:
     """Dice según el tercil de |desplazamiento| de la lesión y fracción de fallos (Dice < 0.1)."""
     d = per_sample[(per_sample["método"] == method) & (per_sample["conjunto"] == split)].copy()
-    d["tercil_shift"] = pd.qcut(d["abs_shift"], 3, labels=["bajo", "medio", "alto"])
+    if d["abs_shift"].nunique() >= 3:
+        d["tercil_shift"] = pd.qcut(d["abs_shift"], 3, labels=["bajo", "medio", "alto"])
+    else:  # sin jitter todos los desplazamientos son 0: no hay terciles
+        d["tercil_shift"] = "sin desplazamiento"
     return d.groupby("tercil_shift", observed=True).agg(
         n=("dice", "size"), shift_min=("abs_shift", "min"), shift_max=("abs_shift", "max"),
         dice_media=("dice", "mean"), dice_mediana=("dice", "median"),

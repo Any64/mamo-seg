@@ -213,3 +213,12 @@ def test_bootstrap_and_wilcoxon():
     assert bootstrap_mean_ci(a, n_boot=500, seed=1) == ci      # reproducible
     w = paired_wilcoxon(a, b)
     assert w["p_valor"] < 1e-10 and w["frac_a_mejor"] > 0.95 and abs(w["media_diferencia"] - 0.3) < 0.02
+
+
+def test_dice_by_shift_without_jitter():
+    """Con jitter 0 todos los desplazamientos son 0: no debe fallar."""
+    from src.pipeline import UNET, dice_by_shift
+    ps = pd.DataFrame({"método": UNET, "conjunto": "val", "abs_shift": 0.0, "dice": [0.2, 0.8, 0.9, 0.05]})
+    out = dice_by_shift(ps, split="val")
+    assert list(out.index) == ["sin desplazamiento"] and out["n"].iloc[0] == 4
+    assert out["frac_dice_lt_0_1"].iloc[0] == 0.25
