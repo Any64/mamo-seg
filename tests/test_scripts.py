@@ -197,3 +197,19 @@ def test_cross_validation_groups_by_patient(archive, tmp_path):
     assert len(df) == 3 and df["n_val"].sum() == n_rows      # cada recorte se valida una vez
     assert df[["dice_unet", "dice_prior"]].apply(lambda c: c.between(0, 1)).all().all()
     assert (tmp_path / "out" / "runs" / "cv_cv3" / "cv_summary.json").exists()
+
+
+def test_bootstrap_and_wilcoxon():
+    import numpy as np
+    from src.stats import bootstrap_mean_ci, paired_wilcoxon
+    rng = np.random.default_rng(0)
+    a = rng.uniform(0.6, 0.9, 200)
+    b = a - 0.3 + rng.normal(0, 0.05, 200)
+    ci = bootstrap_mean_ci(a, n_boot=500, seed=1)
+    assert ci["ic_inf"] < a.mean() < ci["ic_sup"] and ci["ic_sup"] - ci["ic_inf"] < 0.05
+    groups = np.repeat(np.arange(100), 2)                 # 2 recortes por paciente
+    ci_g = bootstrap_mean_ci(a, n_boot=500, seed=1, groups=groups)
+    assert ci_g["ic_inf"] < a.mean() < ci_g["ic_sup"]
+    assert bootstrap_mean_ci(a, n_boot=500, seed=1) == ci      # reproducible
+    w = paired_wilcoxon(a, b)
+    assert w["p_valor"] < 1e-10 and w["frac_a_mejor"] > 0.95 and abs(w["media_diferencia"] - 0.3) < 0.02
