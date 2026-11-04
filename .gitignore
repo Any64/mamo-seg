@@ -1,0 +1,33 @@
+# datos y resultados pesados (no se suben al repositorio)
+archive/
+data/
+outputs/
+*.npz
+*.pt
+*.pth
+*.zip
+# python / jupyter
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+.pytest_cache/
+# credenciales
+kaggle.json
+.env
+# latex (auxiliares)
+report/**/*.aux
+report/**/*.log
+report/**/*.out
+report/**/*.toc
+report/**/*.fls
+report/**/*.fdb_latexmk
+report/**/*.synctex.gz
+report/**/*.bbl
+report/**/*.blg
+report/**/*.lof
+report/**/*.lot
+# sistema
+.DS_Store
+Thumbs.db
