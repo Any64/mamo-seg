@@ -9,8 +9,13 @@ import torch.nn.functional as F
 from .data_utils import normalize_stack
 
 
+def to_input_tensor(X: np.ndarray, device: torch.device) -> torch.Tensor:
+    """Recortes uint8 (N,H,W) -> tensor normalizado (N,1,H,W) en ``device``."""
+    return torch.from_numpy(normalize_stack(X))[:, None].to(device)
+
+
 def to_tensors(X: np.ndarray, Y: np.ndarray, device: torch.device):
-    xt = torch.from_numpy(normalize_stack(X))[:, None].to(device)
+    xt = to_input_tensor(X, device)
     yt = torch.from_numpy(Y.astype(np.float32))[:, None].to(device)
     return xt, yt
 

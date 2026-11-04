@@ -14,8 +14,13 @@ import pandas as pd
 from scipy import ndimage as ndi
 from scipy.signal import find_peaks
 from skimage import measure, morphology
+from sklearn.dummy import DummyClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (accuracy_score, balanced_accuracy_score,
-                             confusion_matrix, f1_score)
+                             confusion_matrix, f1_score, roc_auc_score)
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier, export_text
 
 SHAPE_CLASSES = ["ROUND", "OVAL", "LOBULATED", "IRREGULAR"]
@@ -144,3 +149,37 @@ def evaluate_shape(y_true, y_pred, labels=SHAPE_CLASSES) -> dict:
 
 def tree_rules(clf) -> str:
     return export_text(clf, feature_names=FEATURE_NAMES)
+
+
+# --------------------------------------------------------------------------- experimentos
+TREE, LOGREG, FOREST, MAJORITY = ("árbol (prof. 3)", "regresión logística", "random forest",
+                                  "clase mayoritaria")
+
+
+def make_classifier(name: str, seed: int = 42):
+    """Clasificadores usados en los experimentos de forma (todos con clases balanceadas)."""
+    if name == TREE:
+        return DecisionTreeClassifier(max_depth=3, min_samples_leaf=10, class_weight="balanced",
+                                      random_state=seed)
+    if name == LOGREG:
+        return make_pipeline(StandardScaler(),
+                             LogisticRegression(class_weight="balanced", max_iter=5000))
+    if name == FOREST:
+        return RandomForestClassifier(n_estimators=500, min_samples_leaf=5, class_weight="balanced",
+                                      n_jobs=-1, random_state=seed)
+    if name == MAJORITY:
+        return DummyClassifier(strategy="most_frequent")
+    raise ValueError(f"Clasificador desconocido: {name}")
+
+
+def fit_classifier(name: str, F: pd.DataFrame, y, seed: int = 42):
+    """Ajusta ``name`` sobre las filas con descriptores válidos (sin NaN)."""
+    ok = F.notna().all(axis=1).values
+    return make_classifier(name, seed).fit(F.loc[ok, FEATURE_NAMES].values, np.asarray(y)[ok])
+
+
+def binary_scores(y_true, prob) -> dict:
+    """AUC-ROC y exactitud balanceada (umbral 0.5 sobre la probabilidad de la clase positiva)."""
+    prob = np.asarray(prob)
+    return {"AUC": float(roc_auc_score(y_true, prob)),
+            "exactitud balanceada": float(balanced_accuracy_score(y_true, prob >= 0.5))}

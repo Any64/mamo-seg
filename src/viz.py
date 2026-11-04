@@ -83,3 +83,63 @@ def plot_hist(values, xlabel, title="", path=None, bins=30):
     ax.set_ylabel("frecuencia")
     ax.set_title(title)
     return _finish(fig, path)
+
+
+def plot_grouped_bars(df, x_col, group_col, value_col, panel_col, x_order, group_order,
+                      ref_lines=None, ylabel="", title="", path=None, ylim=(0, 0.6)):
+    """Barras agrupadas (un panel por valor de ``panel_col``) con líneas de referencia
+    opcionales ``ref_lines`` = {etiqueta: {panel: valor}}."""
+    colors = ["#2a78d6", "#eb6834", "#1baf7a"]  # paleta categórica validada (máx. 3 series)
+    panels = list(dict.fromkeys(df[panel_col]))
+    fig, axes = plt.subplots(1, len(panels), figsize=(5 * len(panels), 4), sharey=True, squeeze=False)
+    w = 0.8 / len(group_order)
+    for ax, panel in zip(axes[0], panels):
+        d = df[df[panel_col] == panel]
+        for j, g in enumerate(group_order):
+            v = [d[(d[x_col] == x) & (d[group_col] == g)][value_col].iloc[0] for x in x_order]
+            xs = np.arange(len(x_order)) + (j - (len(group_order) - 1) / 2) * w
+            ax.bar(xs, v, width=w - 0.03, color=colors[j], label=g)
+            for xi, vi in zip(xs, v):
+                ax.text(xi, vi + 0.006, f"{vi:.2f}", ha="center", va="bottom", fontsize=7, color="#444")
+        for (label, vals), ls in zip((ref_lines or {}).items(), ("--", ":")):
+            ax.axhline(vals[panel], color="#666", lw=1, ls=ls, label=label)
+        ax.set_xticks(range(len(x_order)), [str(x) for x in x_order])
+        ax.set_title(str(panel), fontsize=10)
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.grid(axis="y", color="#e5e5e5", lw=0.6)
+        ax.set_axisbelow(True)
+    axes[0][0].set_ylabel(ylabel)
+    axes[0][0].set_ylim(*ylim)
+    handles, labels = axes[0][0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=len(labels), frameon=False, fontsize=8)
+    fig.suptitle(title, fontsize=11)
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    return _finish_saved(fig, path)
+
+
+def plot_roc_panels(panels, title="", path=None):
+    """Curvas ROC. ``panels`` = [(título, [(etiqueta, fpr, tpr, auc), ...]), ...] (máx. 3 curvas)."""
+    colors = ["#2a78d6", "#eb6834", "#1baf7a"]
+    fig, axes = plt.subplots(1, len(panels), figsize=(5 * len(panels), 4.6), squeeze=False)
+    for ax, (ptitle, curves) in zip(axes[0], panels):
+        for color, (label, fpr, tpr, auc) in zip(colors, curves):
+            ax.plot(fpr, tpr, color=color, lw=2, label=f"{label} (AUC {auc:.2f})")
+        ax.plot([0, 1], [0, 1], color="#888", lw=1, ls="--", label="azar (AUC 0.50)")
+        ax.set_xlabel("1 − especificidad")
+        ax.set_ylabel("sensibilidad")
+        ax.set_title(ptitle, fontsize=10)
+        ax.set_aspect("equal")
+        ax.grid(color="#e5e5e5", lw=0.6)
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.legend(loc="upper left", bbox_to_anchor=(0, -0.16), fontsize=7.5, frameon=False)
+    fig.suptitle(title, fontsize=11)
+    fig.tight_layout()
+    return _finish_saved(fig, path)
+
+
+def _finish_saved(fig, path):
+    """Como ``_finish`` pero sin volver a llamar a tight_layout (ya ajustado)."""
+    if path is not None:
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(path, dpi=150, bbox_inches="tight")
+    return fig

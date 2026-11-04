@@ -1,0 +1,29 @@
+# Demo rápida: misma configuración que main.yaml pero solo 3 épocas (~1 min de entrenamiento
+# en una GTX 1650 una vez generados los recortes). Útil para verificar la instalación.
+# Uso:  python scripts/run_experiment.py --config configs/quick.yaml
+
+name: quick
+
+data:
+  archive_dir: data/CBIS-DDSM
+  out_dir: outputs
+  val_frac: 0.2
+
+preprocessing:
+  img_size: 256
+  context: 3.0
+  jitter: 0.2
+  min_side: 96
+
+model:
+  base_channels: 16
+
+training:
+  seed: 42
+  epochs: 3
+  batch_size: 8
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 10
+  threshold: 0.5
+  amp: false

@@ -45,11 +45,12 @@ def batch_dice(probs: np.ndarray, gt: np.ndarray, thr: float = 0.5) -> float:
 
 
 def train_unet(cfg: Config, Xtr, Ytr, Xva, Yva, verbose: bool = True,
-               ckpt_name: str = "unet_best.pt", log_path=None):
+               ckpt_path=None, log_path=None):
     """Entrena y devuelve (modelo con los mejores pesos, historial como DataFrame).
 
-    Si se entrega ``log_path``, cada época se añade también a ese archivo (útil al
-    ejecutar el notebook de forma desatendida, donde los ``print`` no se ven en vivo).
+    Los mejores pesos se guardan en ``ckpt_path`` (por defecto
+    ``<out_dir>/models/unet_best.pt``). Si se entrega ``log_path``, cada época se
+    añade también a ese archivo (útil en ejecuciones desatendidas).
     """
     set_seed(cfg.seed)
     device = get_device()
@@ -65,8 +66,8 @@ def train_unet(cfg: Config, Xtr, Ytr, Xva, Yva, verbose: bool = True,
     scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
     gen = torch.Generator().manual_seed(cfg.seed)
 
-    cfg.models_dir.mkdir(parents=True, exist_ok=True)
-    ckpt = Path(cfg.models_dir) / ckpt_name
+    ckpt = Path(ckpt_path) if ckpt_path is not None else cfg.models_dir / "unet_best.pt"
+    ckpt.parent.mkdir(parents=True, exist_ok=True)
     best, bad, history = -1.0, 0, []
 
     def log(msg):

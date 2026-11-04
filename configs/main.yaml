@@ -1,0 +1,30 @@
+# Experimento principal (resultados del informe).
+# Uso:  python scripts/run_experiment.py --config configs/main.yaml [--seed N] [--epochs N]
+# Las rutas relativas se interpretan desde la raíz del repositorio.
+# La ruta del dataset puede sobrescribirse con la variable de entorno MAMO_DATA_DIR o con --data-dir.
+
+name: main                    # resultados en outputs/runs/main/
+
+data:
+  archive_dir: data/CBIS-DDSM # carpeta con csv/ y jpeg/ (ver docs/DATA.md)
+  out_dir: outputs            # caché de recortes, pesos y resultados (no versionado)
+  val_frac: 0.2               # fracción de PACIENTES del train oficial usada como validación
+
+preprocessing:
+  img_size: 256               # lado de los recortes ROI
+  context: 3.0                # lado del recorte = 3 x lado mayor de la caja de la lesión
+  jitter: 0.2                 # desplazamiento aleatorio del centro (±20 % del lado)
+  min_side: 96                # lado mínimo del recorte (px de la mamografía original)
+
+model:
+  base_channels: 16           # U-Net de 4 niveles, ~1.9 M parámetros
+
+training:
+  seed: 42
+  epochs: 40
+  batch_size: 8
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 10                # early stopping sobre el Dice de validación
+  threshold: 0.5
+  amp: false                  # NO activar en GPUs GTX 16xx: fp16 produce pérdida NaN
