@@ -143,3 +143,37 @@ def _finish_saved(fig, path):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(path, dpi=150, bbox_inches="tight")
     return fig
+
+
+def plot_ablations(df, path=None):
+    """Dice en validación de la U-Net y del prior centrado por grupo de ablación (un panel por grupo).
+
+    ``df`` = results/ablaciones.csv (columnas grupo, valor, es_referencia, dice_unet_val,
+    dice_prior_val). La configuración de referencia se marca con un asterisco.
+    """
+    groups = list(dict.fromkeys(df["grupo"]))
+    fig, axes = plt.subplots(1, len(groups), figsize=(3.6 * len(groups), 4.2), sharey=True, squeeze=False)
+    series = [("dice_unet_val", "U-Net", "#2a78d6"), ("dice_prior_val", "prior centrado", "#eb6834")]
+    w = 0.38
+    for ax, g in zip(axes[0], groups):
+        d = df[df["grupo"] == g].reset_index(drop=True)
+        x = np.arange(len(d))
+        for j, (col, label, color) in enumerate(series):
+            xs = x + (j - 0.5) * w
+            ax.bar(xs, d[col], width=w - 0.04, color=color, label=label)
+            for xi, vi in zip(xs, d[col]):
+                ax.text(xi, vi + 0.012, f"{vi:.2f}", ha="center", va="bottom", fontsize=7.5, color="#333")
+        labels = [f"{v}*" if ref else f"{v}" for v, ref in zip(d["valor"], d["es_referencia"])]
+        ax.set_xticks(x, labels, fontsize=9)
+        ax.set_xlabel(d["parametro"].iloc[0], fontsize=9)
+        ax.set_title(g, fontsize=10)
+        ax.set_ylim(0, 1.0)
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.grid(axis="y", color="#e5e5e5", lw=0.6)
+        ax.set_axisbelow(True)
+    axes[0][0].set_ylabel("Dice medio en validación")
+    handles, labels = axes[0][0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=2, frameon=False, fontsize=9)
+    fig.suptitle("Ablaciones (validación, semilla 42; * = configuración de referencia)", fontsize=11)
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    return _finish_saved(fig, path)

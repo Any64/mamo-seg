@@ -15,9 +15,11 @@ preprocessing:
   context: 3.0                # lado del recorte = 3 x lado mayor de la caja de la lesión
   jitter: 0.2                 # desplazamiento aleatorio del centro (±20 % del lado)
   min_side: 96                # lado mínimo del recorte (px de la mamografía original)
+  workers: 8                  # procesos para generar los recortes (no cambia el resultado)
 
 model:
   base_channels: 16           # U-Net de 4 niveles, ~1.9 M parámetros
+  loss: bce_dice              # bce_dice (BCE + Dice) o dice (solo Dice)
 
 training:
   seed: 42

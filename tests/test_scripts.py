@@ -150,3 +150,50 @@ def test_default_destination_uses_env(dl, monkeypatch, tmp_path):
     assert dl.default_dest() == ROOT / "data" / "CBIS-DDSM"
     monkeypatch.setenv(DATA_DIR_ENV, str(tmp_path))
     assert dl.default_dest() == tmp_path
+
+
+def test_run_experiment_without_test_split(archive, tiny_config, tmp_path):
+    """Modo de selección de modelo: el test oficial no se genera ni se evalúa."""
+    pytest.importorskip("torch")
+    run = load_script("run_experiment")
+    out = tmp_path / "out"
+    metrics = run.main(["--config", str(tiny_config), "--data-dir", str(archive), "--out-dir", str(out),
+                        "--epochs", "1", "--no-test", "--name", "sin_test"])
+    assert metrics["test_evaluado"] is False
+    assert not any("test" in k for k in metrics["segmentacion"])
+    assert not list((out / "processed").glob("test_*"))
+    assert (out / "runs" / "sin_test" / "figures" / "predicciones_val.png").exists()
+
+
+def test_parallel_preprocessing_is_identical(archive):
+    """Los recortes generados en paralelo son idénticos a los secuenciales."""
+    import numpy as np
+    from src.data_index import load_case_csv
+    from src.preprocess import build_split
+    df = load_case_csv(archive / "csv", "test")
+    a = build_split(df, archive / "jpeg", 64, 3.0, 96, jitter=0.2, seed=1, progress=False, workers=1)
+    b = build_split(df, archive / "jpeg", 64, 3.0, 96, jitter=0.2, seed=1, progress=False, workers=2)
+    assert np.array_equal(a[0], b[0]) and np.array_equal(a[1], b[1]) and a[2].equals(b[2])
+
+
+def test_loss_selection():
+    torch = pytest.importorskip("torch")
+    from src.losses import get_loss
+    logits, target = torch.zeros(2, 1, 8, 8), torch.ones(2, 1, 8, 8)
+    assert get_loss("dice")(logits, target) < get_loss("bce_dice")(logits, target)
+    with pytest.raises(ValueError):
+        get_loss("focal")
+
+
+def test_cross_validation_groups_by_patient(archive, tmp_path):
+    pytest.importorskip("torch")
+    from src.config import Config
+    from src.pipeline import cross_validate
+    cfg = Config(archive_dir=archive, out_dir=tmp_path / "out", img_size=64, epochs=1,
+                 base_channels=8, batch_size=8, name="cv")
+    df = cross_validate(cfg, n_splits=3, verbose=False)
+    from src.data_index import load_case_csv
+    n_rows = len(load_case_csv(archive / "csv", "train"))
+    assert len(df) == 3 and df["n_val"].sum() == n_rows      # cada recorte se valida una vez
+    assert df[["dice_unet", "dice_prior"]].apply(lambda c: c.between(0, 1)).all().all()
+    assert (tmp_path / "out" / "runs" / "cv_cv3" / "cv_summary.json").exists()

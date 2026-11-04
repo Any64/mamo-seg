@@ -111,24 +111,48 @@ def patch_from_resolved(res: dict, img_size: int, context: float, min_side: int,
     return ip, mp, info
 
 
+def _process_row(task):
+    """Procesa una fila del CSV (función de módulo para poder usarla en procesos paralelos).
+
+    Devuelve (estado, (img, máscara, info) o None).
+    """
+    idx, row, jpeg_dir, cols, img_size, context, min_side, jitter, seed = task
+    res = resolve_row(jpeg_dir, row, cols)
+    if res["status"] != "ok":
+        return res["status"], None
+    try:
+        rng = np.random.default_rng([seed, int(idx)])  # desplazamiento reproducible por fila
+        return "ok", patch_from_resolved(res, img_size, context, min_side, jitter, rng)
+    except Exception as e:  # una fila rota no debe detener todo el proceso
+        return f"error:{type(e).__name__}", None
+
+
 def build_split(df: pd.DataFrame, jpeg_dir: Path, img_size: int, context: float,
-                min_side: int, jitter: float = 0.0, seed: int = 0, progress: bool = True):
-    """Procesa todas las filas de un CSV. Devuelve (X, Y, meta, conteo_de_estados)."""
+                min_side: int, jitter: float = 0.0, seed: int = 0, progress: bool = True,
+                workers: int = 1):
+    """Procesa todas las filas de un CSV. Devuelve (X, Y, meta, conteo_de_estados).
+
+    Con ``workers`` > 1 las filas se procesan en paralelo (procesos); el resultado
+    es idéntico al secuencial porque el desplazamiento de cada fila depende solo
+    de (seed, índice de la fila).
+    """
     cols = detect_columns(df)
     X, Y, rows = [], [], []
     status = Counter()
-    it = tqdm(list(df.iterrows()), desc="recortes") if progress else df.iterrows()
-    for idx, row in it:
-        res = resolve_row(jpeg_dir, row, cols)
-        if res["status"] != "ok":
-            status[res["status"]] += 1
+    items = list(df.iterrows())
+    tasks = [(idx, row, jpeg_dir, cols, img_size, context, min_side, jitter, seed) for idx, row in items]
+    if workers > 1:
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor(max_workers=workers) as ex:
+            outputs = list(tqdm(ex.map(_process_row, tasks, chunksize=4), total=len(tasks),
+                                desc="recortes") if progress else ex.map(_process_row, tasks, chunksize=4))
+    else:
+        outputs = map(_process_row, tqdm(tasks, desc="recortes") if progress else tasks)
+    for (idx, row), (st, out) in zip(items, outputs):
+        if st != "ok":
+            status[st] += 1
             continue
-        try:
-            rng = np.random.default_rng([seed, int(idx)])  # desplazamiento reproducible por fila
-            ip, mp, info = patch_from_resolved(res, img_size, context, min_side, jitter, rng)
-        except Exception as e:  # una fila rota no debe detener todo el proceso
-            status[f"error:{type(e).__name__}"] += 1
-            continue
+        ip, mp, info = out
         status["ok"] += 1
         X.append(ip)
         Y.append(mp)

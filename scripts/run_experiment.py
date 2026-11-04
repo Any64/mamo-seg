@@ -25,7 +25,11 @@ from src.pipeline import run_experiment            # noqa: E402
 
 def parse_args(argv=None):
     p = base_parser("Entrena y evalúa la U-Net y los métodos de referencia.")
-    p.add_argument("--seed", type=int, help="sobrescribe la semilla")
+    p.add_argument("--seed", type=int, help="sobrescribe la semilla de datos y entrenamiento")
+    p.add_argument("--train-seed", type=int,
+                   help="semilla solo del entrenamiento (mismos recortes y división train/val)")
+    p.add_argument("--no-test", action="store_true",
+                   help="no generar ni evaluar el test oficial (selección de modelo / ablaciones)")
     p.add_argument("--epochs", type=int, help="sobrescribe el número máximo de épocas")
     p.add_argument("--no-figures", action="store_true", help="no generar figuras")
     return p.parse_args(argv)
@@ -33,9 +37,9 @@ def parse_args(argv=None):
 
 def main(argv=None) -> dict:
     a = parse_args(argv)
-    cfg = config_from_args(a, seed=a.seed, epochs=a.epochs)
+    cfg = config_from_args(a, seed=a.seed, epochs=a.epochs, train_seed=a.train_seed)
     print(f"Experimento '{cfg.name}' | dataset: {cfg.archive_dir} | salida: {cfg.run_dir}")
-    return run_experiment(cfg, figures=not a.no_figures)
+    return run_experiment(cfg, figures=not a.no_figures, evaluate_test=not a.no_test)
 
 
 if __name__ == "__main__":

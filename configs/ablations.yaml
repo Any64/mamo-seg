@@ -1,0 +1,39 @@
+# Ablaciones (semilla 42, 40 épocas máx., early stopping). Cada variante = configs/main.yaml + cambios.
+# Todas se evalúan SOLO en validación (el test oficial no se genera ni se usa).
+# Uso:  python scripts/run_ablations.py --config configs/ablations.yaml
+#
+# Grupos:
+#   (a) context  {2, 3, 4}           con jitter 0.2   -> tarea distinta: descriptiva, no se elige por val
+#   (b) jitter   {0, 0.1, 0.2, 0.3}  con context 3    -> ídem; jitter 0 muestra el atajo de posición
+#   (c) base_channels {16, 32}                         -> elección de modelo (en validación)
+#   (d) pérdida  {BCE+Dice, solo Dice}                 -> elección de modelo (en validación)
+
+base: configs/main.yaml
+
+variants:
+  ref:         {}                       # context 3, jitter 0.2, base 16, BCE+Dice (= experimento main)
+  context2:    {context: 2.0}
+  context4:    {context: 4.0}
+  jitter0:     {jitter: 0.0}
+  jitter0.1:   {jitter: 0.1}
+  jitter0.3:   {jitter: 0.3}
+  base32:      {base_channels: 32}
+  dice_only:   {loss: dice}
+
+# La referencia reutiliza outputs/runs/main si existe y su configuración coincide.
+reuse:
+  ref: main
+
+groups:
+  "(a) context (jitter 0.2)":
+    param: context
+    variants: [context2, ref, context4]
+  "(b) jitter (context 3)":
+    param: jitter
+    variants: [jitter0, jitter0.1, ref, jitter0.3]
+  "(c) canales base de la U-Net":
+    param: base_channels
+    variants: [ref, base32]
+  "(d) función de pérdida":
+    param: loss
+    variants: [ref, dice_only]

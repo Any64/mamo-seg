@@ -10,7 +10,7 @@ import torch
 
 from .config import Config
 from .dataset import augment_batch, iterate_batches, to_tensors
-from .losses import bce_dice_loss
+from .losses import get_loss
 from .model import UNet
 
 
@@ -52,7 +52,9 @@ def train_unet(cfg: Config, Xtr, Ytr, Xva, Yva, verbose: bool = True,
     ``<out_dir>/models/unet_best.pt``). Si se entrega ``log_path``, cada época se
     añade también a ese archivo (útil en ejecuciones desatendidas).
     """
-    set_seed(cfg.seed)
+    seed = cfg.seed if cfg.train_seed is None else cfg.train_seed
+    set_seed(seed)
+    loss_fn = get_loss(cfg.loss)
     device = get_device()
     xtr, ytr = to_tensors(Xtr, Ytr, device)
     xva, yva = to_tensors(Xva, Yva, device)
@@ -64,7 +66,7 @@ def train_unet(cfg: Config, Xtr, Ytr, Xva, Yva, verbose: bool = True,
     use_amp = bool(cfg.amp) and device.type == "cuda"
     torch.backends.cudnn.benchmark = device.type == "cuda"
     scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
-    gen = torch.Generator().manual_seed(cfg.seed)
+    gen = torch.Generator().manual_seed(seed)
 
     ckpt = Path(ckpt_path) if ckpt_path is not None else cfg.models_dir / "unet_best.pt"
     ckpt.parent.mkdir(parents=True, exist_ok=True)
@@ -91,7 +93,7 @@ def train_unet(cfg: Config, Xtr, Ytr, Xva, Yva, verbose: bool = True,
             xb, yb = augment_batch(xb, yb)
             opt.zero_grad(set_to_none=True)
             with torch.autocast(device_type=device.type, enabled=use_amp):
-                loss = bce_dice_loss(model(xb), yb)
+                loss = loss_fn(model(xb), yb)
             if not math.isfinite(loss.item()):
                 raise FloatingPointError(
                     "La pérdida es NaN/inf. Causas frecuentes: precisión mixta en GPUs GTX 16xx "

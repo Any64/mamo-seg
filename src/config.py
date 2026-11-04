@@ -26,10 +26,13 @@ class Config:
     jitter: float = 0.2     # desplazamiento aleatorio (fracción del lado) del centro del recorte
     min_side: int = 96      # lado mínimo (px de la mamografía original) del recorte
     val_frac: float = 0.2   # fracción de PACIENTES de train oficial usada como validación
-    seed: int = 42
+    seed: int = 42          # semilla de los DATOS (desplazamientos y división train/val) y, por defecto, del entrenamiento
+    workers: int = 1        # procesos para generar los recortes (no cambia el resultado)
 
     # --- modelo / entrenamiento -------------------------------------------
     base_channels: int = 32   # canales de la 1ª capa de la U-Net (16 si solo hay CPU)
+    loss: str = "bce_dice"    # "bce_dice" (BCE + Dice) o "dice" (solo Dice suave)
+    train_seed: int | None = None  # semilla del entrenamiento (pesos, lotes, aumento); None = ``seed``
     batch_size: int = 16
     epochs: int = 40
     lr: float = 1e-3

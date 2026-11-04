@@ -36,36 +36,45 @@ class Split(NamedTuple):
 
 
 # --------------------------------------------------------------------------- datos
-def prepare_data(cfg: Config, progress: bool = True):
+def ensure_split(cfg: Config, split: str, progress: bool = True):
+    """Genera los recortes de ``split`` ('train' o 'test' oficial) si no están en caché.
+
+    Devuelve el conteo de filas procesadas/descartadas, o None si ya existían.
+    """
+    if (cfg.processed_dir / f"{split}_{cfg.cache_tag}.npz").exists():
+        return None
+    if not cfg.csv_dir.is_dir():
+        raise FileNotFoundError(
+            f"No se encontró el dataset en {cfg.archive_dir} (se espera csv/ y jpeg/). "
+            "Indica la ruta con la variable de entorno MAMO_DATA_DIR, con archive_dir en la "
+            "config o con --data-dir. Ver docs/DATA.md.")
+    df = load_case_csv(cfg.csv_dir, split)
+    X, Y, meta, st = build_split(df, cfg.jpeg_dir, cfg.img_size, cfg.context, cfg.min_side,
+                                 jitter=cfg.jitter, seed=cfg.seed, progress=progress,
+                                 workers=cfg.workers)
+    save_split(cfg.processed_dir, f"{split}_{cfg.cache_tag}", X, Y, meta)
+    return dict(st)
+
+
+def prepare_data(cfg: Config, progress: bool = True, include_test: bool = True):
     """Genera (o carga de la caché) los recortes y divide train/val por paciente.
 
-    Devuelve ``(data, status)``: ``data`` es un dict {'train','val','test'} -> Split
-    (test es el conjunto oficial de CBIS-DDSM) y ``status`` el conteo de filas
-    procesadas/descartadas de los splits que se regeneraron en esta llamada.
+    Devuelve ``(data, status)``: ``data`` es un dict {'train','val'[, 'test']} -> Split
+    (test es el conjunto oficial de CBIS-DDSM; con ``include_test=False`` ni se
+    genera ni se carga) y ``status`` el conteo de filas de los splits regenerados.
     """
-    tag, status = cfg.cache_tag, {}
-    for split in ("train", "test"):
-        if (cfg.processed_dir / f"{split}_{tag}.npz").exists():
-            continue
-        if not cfg.csv_dir.is_dir():
-            raise FileNotFoundError(
-                f"No se encontró el dataset en {cfg.archive_dir} (se espera csv/ y jpeg/). "
-                "Indica la ruta con la variable de entorno MAMO_DATA_DIR, con archive_dir en la "
-                "config o con --data-dir. Ver docs/DATA.md.")
-        df = load_case_csv(cfg.csv_dir, split)
-        X, Y, meta, st = build_split(df, cfg.jpeg_dir, cfg.img_size, cfg.context, cfg.min_side,
-                                     jitter=cfg.jitter, seed=cfg.seed, progress=progress)
-        save_split(cfg.processed_dir, f"{split}_{tag}", X, Y, meta)
-        status[split] = dict(st)
+    splits = ("train", "test") if include_test else ("train",)
+    status = {s: st for s in splits if (st := ensure_split(cfg, s, progress)) is not None}
 
-    Xall, Yall, mall = load_split(cfg.processed_dir, f"train_{tag}")
-    Xte, Yte, mte = load_split(cfg.processed_dir, f"test_{tag}")
+    Xall, Yall, mall = load_split(cfg.processed_dir, f"train_{cfg.cache_tag}")
     tr, va = patient_split(mall, cfg.val_frac, cfg.seed)
     data = {
         "train": Split(Xall[tr], Yall[tr], mall.iloc[tr].reset_index(drop=True)),
         "val": Split(Xall[va], Yall[va], mall.iloc[va].reset_index(drop=True)),
-        "test": Split(Xte, Yte, mte.reset_index(drop=True)),
     }
+    if include_test:
+        Xte, Yte, mte = load_split(cfg.processed_dir, f"test_{cfg.cache_tag}")
+        data["test"] = Split(Xte, Yte, mte.reset_index(drop=True))
     assert set(data["train"].meta["patient_id"]).isdisjoint(data["val"].meta["patient_id"])
     return data, status
 
@@ -172,11 +181,15 @@ def shape_table(shape_res: dict) -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- experimento completo
-def run_experiment(cfg: Config, verbose: bool = True, figures: bool = True) -> dict:
-    """Preprocesa (con caché), entrena, evalúa en val y test y guarda todo en ``cfg.run_dir``:
+def run_experiment(cfg: Config, verbose: bool = True, figures: bool = True,
+                   evaluate_test: bool = True) -> dict:
+    """Preprocesa (con caché), entrena, evalúa y guarda todo en ``cfg.run_dir``:
 
     config.yaml, metrics.json, per_sample.csv, history.csv, train.log, unet_best.pt,
     tablas CSV y figuras (``figures/``). Devuelve el diccionario de métricas.
+
+    Con ``evaluate_test=False`` (ablaciones y selección de modelo) el test oficial
+    no se genera, no se carga y no se evalúa: todo se reporta en validación.
     """
     import yaml
     from .train import train_unet
@@ -188,19 +201,21 @@ def run_experiment(cfg: Config, verbose: bool = True, figures: bool = True) -> d
         yaml.safe_dump(cfg.to_dict(), f, sort_keys=False, allow_unicode=True)
 
     say = print if verbose else (lambda *a, **k: None)
-    data, status = prepare_data(cfg, progress=verbose)
-    say(f"train={len(data['train'].X)} | val={len(data['val'].X)} | test={len(data['test'].X)}")
+    data, status = prepare_data(cfg, progress=verbose, include_test=evaluate_test)
+    splits = EVAL_SPLITS if evaluate_test else ("val",)
+    last = splits[-1]   # conjunto de las figuras y del análisis por desplazamiento
+    say(" | ".join(f"{s}={len(data[s].X)}" for s in data))
 
-    results = run_baselines(data)
+    results = run_baselines(data, splits)
     model, hist = train_unet(cfg, data["train"].X, data["train"].Y, data["val"].X, data["val"].Y,
                              verbose=verbose, ckpt_path=run_dir / "unet_best.pt",
                              log_path=run_dir / "train.log")
-    preds, unet_res = evaluate_unet(model, data, cfg)
+    preds, unet_res = evaluate_unet(model, data, cfg, splits)
     results.update(unet_res)
-    shape_res, clf, F_plot = shape_analysis(data, preds, cfg)
+    shape_res, clf, F_plot = shape_analysis(data, preds, cfg, splits)
 
     per_sample = per_sample_table(results, data)
-    by_shift = dice_by_shift(per_sample)
+    by_shift = dice_by_shift(per_sample, split=last)
     per_sample.to_csv(run_dir / "per_sample.csv", index=False)
     hist.to_csv(run_dir / "history.csv", index=False)
     summary_table(results).to_csv(run_dir / "metricas_segmentacion.csv", index=False)
@@ -210,6 +225,7 @@ def run_experiment(cfg: Config, verbose: bool = True, figures: bool = True) -> d
 
     metrics = {
         "name": cfg.name,
+        "test_evaluado": evaluate_test,
         "n": {s: int(len(data[s].X)) for s in data},
         "preprocesamiento_regenerado": status,
         "segmentacion": {f"{m} | {s}": {
@@ -219,37 +235,87 @@ def run_experiment(cfg: Config, verbose: bool = True, figures: bool = True) -> d
         "forma": {f"{s} | {m}": {k: round(float(r[k]), 4)
                                  for k in ("accuracy", "balanced_accuracy", "macro_f1")}
                   for (s, m), r in shape_res.items()},
-        "unet_test_frac_dice_lt_0_1": round(float((unet_res[(UNET, "test")].dice < 0.1).mean()), 4),
+        f"unet_{last}_frac_dice_lt_0_1": round(float((unet_res[(UNET, last)].dice < 0.1).mean()), 4),
         "epocas_entrenadas": int(len(hist)),
         "mejor_epoca": int(hist.loc[hist.val_dice.idxmax(), "epoch"]),
         "mejor_dice_val": round(float(hist.val_dice.max()), 4),
         "segundos_entrenamiento": round(float(hist.seconds.sum()), 1),
+        "segundos_por_epoca": round(float(hist.seconds.iloc[1:].mean() if len(hist) > 1
+                                          else hist.seconds.mean()), 1),
     }
     with open(run_dir / "metrics.json", "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2, ensure_ascii=False)
 
     if figures:
-        save_figures(data, preds, results, shape_res, hist, F_plot, fig_dir)
+        save_figures(data, preds, results, shape_res, hist, F_plot, fig_dir, split=last)
     say(summary_table(results).to_string(index=False))
     say(f"Resultados guardados en {run_dir.resolve()}")
     return metrics
 
 
-def save_figures(data, preds, results, shape_res, hist, F_plot, fig_dir: Path) -> None:
+def save_figures(data, preds, results, shape_res, hist, F_plot, fig_dir: Path, split: str = "test") -> None:
     import matplotlib.pyplot as plt
     from .viz import plot_confusion, plot_feature_boxplots, plot_history, show_samples
-    Xte, Yte, Pte = data["test"].X, data["test"].Y, preds["test"]
+    X, Y, P = data[split].X, data[split].Y, preds[split]
     plot_history(hist, fig_dir / "curvas_entrenamiento.png")
     show_samples(data["train"].X, data["train"].Y, n=12, path=fig_dir / "muestras_recortes.png")
-    show_samples(Xte, Yte, Pte, n=12, path=fig_dir / "predicciones_test.png")
-    dte = results[(UNET, "test")]
-    worst = dte["dice"].sort_values().index[:8].values
-    show_samples(Xte, Yte, Pte, idx=worst, path=fig_dir / "peores_casos_test.png",
-                 titles={i: f"#{i}  Dice={dte.dice[i]:.2f}" for i in worst})
+    show_samples(X, Y, P, n=12, path=fig_dir / f"predicciones_{split}.png")
+    d = results[(UNET, split)]
+    worst = d["dice"].sort_values().index[:8].values
+    show_samples(X, Y, P, idx=worst, path=fig_dir / f"peores_casos_{split}.png",
+                 titles={i: f"#{i}  Dice={d.dice[i]:.2f}" for i in worst})
     plot_feature_boxplots(F_plot, "forma", shp.FEATURE_NAMES, shp.SHAPE_CLASSES,
                           fig_dir / "descriptores_por_forma.png")
     for name, suf in (("máscara anotada", "anotada"), ("máscara U-Net", "unet")):
-        plot_confusion(shape_res[("test", name)]["confusion"], shp.SHAPE_CLASSES,
-                       shp.SHAPE_CLASSES + ["NONE"], f"Forma BI-RADS en test, a partir de la {name}",
+        plot_confusion(shape_res[(split, name)]["confusion"], shp.SHAPE_CLASSES,
+                       shp.SHAPE_CLASSES + ["NONE"], f"Forma BI-RADS en {split}, a partir de la {name}",
                        fig_dir / f"confusion_forma_{suf}.png")
     plt.close("all")
+
+
+# --------------------------------------------------------------------------- validación cruzada
+def cross_validate(cfg: Config, n_splits: int = 5, out_dir=None, verbose: bool = True) -> pd.DataFrame:
+    """Validación cruzada de ``n_splits`` particiones AGRUPADA POR PACIENTE sobre el train oficial.
+
+    En cada partición se entrena la U-Net con las otras (early stopping sobre la
+    partición retenida, igual que en el experimento principal) y se mide Dice/IoU
+    de la U-Net y del prior centrado en la partición retenida. El test oficial no
+    se usa. Guarda ``cv_folds.csv`` y ``cv_summary.json`` en ``out_dir``.
+    """
+    from sklearn.model_selection import GroupKFold
+    from .train import train_unet
+
+    out_dir = Path(out_dir or cfg.out_dir / "runs" / f"{cfg.name}_cv{n_splits}")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    ensure_split(cfg, "train", progress=verbose)
+    X, Y, meta = load_split(cfg.processed_dir, f"train_{cfg.cache_tag}")
+    rows = []
+    folds = GroupKFold(n_splits=n_splits).split(X, groups=meta["patient_id"])
+    for k, (tr, va) in enumerate(folds):
+        assert set(meta["patient_id"].iloc[tr]).isdisjoint(meta["patient_id"].iloc[va])
+        fold_csv = out_dir / f"fold{k}.json"
+        if fold_csv.exists():   # reanudable: una partición terminada no se repite
+            rows.append(json.loads(fold_csv.read_text(encoding="utf-8")))
+            continue
+        model, hist = train_unet(cfg, X[tr], Y[tr], X[va], Y[va], verbose=verbose,
+                                 ckpt_path=out_dir / f"fold{k}_unet.pt",
+                                 log_path=out_dir / "train.log")
+        unet = per_sample_metrics(predict_masks(model, X[va], cfg.threshold), Y[va])
+        prior = per_sample_metrics(np.broadcast_to(center_prior(X.shape[1:], fit_center_prior(Y[tr])),
+                                                   X[va].shape), Y[va])
+        row = {"fold": k, "n_train": int(len(tr)), "n_val": int(len(va)),
+               "pacientes_val": int(meta["patient_id"].iloc[va].nunique()),
+               "dice_unet": float(unet.dice.mean()), "iou_unet": float(unet.iou.mean()),
+               "dice_prior": float(prior.dice.mean()), "iou_prior": float(prior.iou.mean()),
+               "epocas": int(len(hist)), "mejor_epoca": int(hist.loc[hist.val_dice.idxmax(), "epoch"])}
+        fold_csv.write_text(json.dumps(row, indent=2), encoding="utf-8")
+        rows.append(row)
+        if verbose:
+            print(f"partición {k}: Dice U-Net {row['dice_unet']:.4f} | prior {row['dice_prior']:.4f}")
+    df = pd.DataFrame(rows)
+    df.to_csv(out_dir / "cv_folds.csv", index=False)
+    summary = {c: {"media": round(float(df[c].mean()), 4), "de": round(float(df[c].std(ddof=1)), 4)}
+               for c in ("dice_unet", "iou_unet", "dice_prior", "iou_prior")}
+    with open(out_dir / "cv_summary.json", "w", encoding="utf-8") as f:
+        json.dump({"n_splits": n_splits, "config": cfg.to_dict(), **summary}, f, indent=2, ensure_ascii=False)
+    return df
