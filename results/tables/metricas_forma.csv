@@ -1,0 +1,5 @@
+conjunto,máscara usada,n,sin descriptores,exactitud,exactitud balanceada,F1 macro
+val,máscara anotada,221,0,0.326,0.303,0.3
+val,máscara U-Net,221,1,0.303,0.288,0.229
+test,máscara anotada,324,0,0.244,0.22,0.215
+test,máscara U-Net,324,1,0.247,0.249,0.172

@@ -1,0 +1,7 @@
+método,conjunto,n,Dice,IoU,Precisión,Sensibilidad
+Prior centrado,val,257,0.344 ± 0.200,0.228 ± 0.165,0.345,0.348
+Clásico (Otsu+morfología),val,257,0.348 ± 0.239,0.241 ± 0.217,0.265,0.869
+Prior centrado,test,378,0.352 ± 0.211,0.236 ± 0.173,0.354,0.356
+Clásico (Otsu+morfología),test,378,0.324 ± 0.225,0.220 ± 0.203,0.235,0.872
+U-Net,val,257,0.784 ± 0.178,0.673 ± 0.199,0.781,0.821
+U-Net,test,378,0.771 ± 0.204,0.662 ± 0.212,0.771,0.803

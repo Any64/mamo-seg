@@ -1,0 +1,58 @@
+{
+  "emparejamiento": {
+    "train": {
+      "n": 1318,
+      "area_frac_max_abs_err": 0.0,
+      "patient_id_coinciden": 1318,
+      "view_coinciden": 1318,
+      "side_coinciden": 1318,
+      "mass_shape_raw_coinciden": 1318,
+      "row_idx_unicos": 1318,
+      "X_e_Y_misma_longitud": true
+    },
+    "test": {
+      "n": 378,
+      "area_frac_max_abs_err": 0.0,
+      "patient_id_coinciden": 378,
+      "view_coinciden": 378,
+      "side_coinciden": 378,
+      "mass_shape_raw_coinciden": 378,
+      "row_idx_unicos": 378,
+      "X_e_Y_misma_longitud": true
+    }
+  },
+  "medianas_train_ROUND_vs_IRREGULAR": {
+    "circularity": {
+      "IRREGULAR": 0.44,
+      "ROUND": 0.486
+    },
+    "solidity": {
+      "IRREGULAR": 0.863,
+      "ROUND": 0.876
+    },
+    "eccentricity": {
+      "IRREGULAR": 0.562,
+      "ROUND": 0.545
+    },
+    "axis_ratio": {
+      "IRREGULAR": 0.827,
+      "ROUND": 0.838
+    },
+    "n_concavities": {
+      "IRREGULAR": 4.0,
+      "ROUND": 3.0
+    },
+    "roughness": {
+      "IRREGULAR": 1.288,
+      "ROUND": 1.228
+    },
+    "radial_cv": {
+      "IRREGULAR": 0.13,
+      "ROUND": 0.128
+    },
+    "n_lobes": {
+      "IRREGULAR": 5.0,
+      "ROUND": 4.0
+    }
+  }
+}

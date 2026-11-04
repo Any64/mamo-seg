@@ -1,0 +1,112 @@
+[
+  {
+    "tarea": "A: descriptores -> patología",
+    "sigma": "-",
+    "clasificador": "clase mayoritaria",
+    "conjunto": "test",
+    "n": 378,
+    "positivo": "MALIGNANT",
+    "AUC": 0.5,
+    "exactitud balanceada": 0.5,
+    "elegida": false
+  },
+  {
+    "tarea": "A: descriptores -> patología",
+    "sigma": 0,
+    "clasificador": "random forest",
+    "conjunto": "test",
+    "n": 378,
+    "positivo": "MALIGNANT",
+    "AUC": 0.5059,
+    "exactitud balanceada": 0.5161,
+    "elegida": true
+  },
+  {
+    "tarea": "B: descriptores -> forma irregular",
+    "sigma": "-",
+    "clasificador": "clase mayoritaria",
+    "conjunto": "test",
+    "n": 324,
+    "positivo": "LOBULATED/IRREGULAR",
+    "AUC": 0.5,
+    "exactitud balanceada": 0.5,
+    "elegida": false
+  },
+  {
+    "tarea": "B: descriptores -> forma irregular",
+    "sigma": 4,
+    "clasificador": "random forest",
+    "conjunto": "test",
+    "n": 324,
+    "positivo": "LOBULATED/IRREGULAR",
+    "AUC": 0.4934,
+    "exactitud balanceada": 0.4858,
+    "elegida": true
+  },
+  {
+    "tarea": "C: patología <- solo descriptores",
+    "sigma": "-",
+    "clasificador": "clase mayoritaria",
+    "conjunto": "test",
+    "n": 324,
+    "positivo": "MALIGNANT",
+    "AUC": 0.5,
+    "exactitud balanceada": 0.5,
+    "elegida": false
+  },
+  {
+    "tarea": "C: patología <- solo descriptores",
+    "sigma": 0,
+    "clasificador": "random forest",
+    "conjunto": "test",
+    "n": 324,
+    "positivo": "MALIGNANT",
+    "AUC": 0.4898,
+    "exactitud balanceada": 0.5017,
+    "elegida": true
+  },
+  {
+    "tarea": "C: patología <- solo etiqueta de forma",
+    "sigma": "-",
+    "clasificador": "clase mayoritaria",
+    "conjunto": "test",
+    "n": 324,
+    "positivo": "MALIGNANT",
+    "AUC": 0.5,
+    "exactitud balanceada": 0.5,
+    "elegida": false
+  },
+  {
+    "tarea": "C: patología <- solo etiqueta de forma",
+    "sigma": "-",
+    "clasificador": "regresión logística",
+    "conjunto": "test",
+    "n": 324,
+    "positivo": "MALIGNANT",
+    "AUC": 0.7803,
+    "exactitud balanceada": 0.7512,
+    "elegida": true
+  },
+  {
+    "tarea": "C: patología <- descriptores + forma",
+    "sigma": "-",
+    "clasificador": "clase mayoritaria",
+    "conjunto": "test",
+    "n": 324,
+    "positivo": "MALIGNANT",
+    "AUC": 0.5,
+    "exactitud balanceada": 0.5,
+    "elegida": false
+  },
+  {
+    "tarea": "C: patología <- descriptores + forma",
+    "sigma": 4,
+    "clasificador": "random forest",
+    "conjunto": "test",
+    "n": 324,
+    "positivo": "MALIGNANT",
+    "AUC": 0.7563,
+    "exactitud balanceada": 0.7373,
+    "elegida": true
+  }
+]

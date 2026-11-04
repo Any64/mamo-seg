@@ -1,0 +1,79 @@
+{
+  "n_train": 1061,
+  "n_val": 257,
+  "n_test": 378,
+  "segmentacion": {
+    "Prior centrado | val": {
+      "dice": 0.3445,
+      "dice_std": 0.2003,
+      "iou": 0.2277
+    },
+    "Clásico (Otsu+morfología) | val": {
+      "dice": 0.3476,
+      "dice_std": 0.2393,
+      "iou": 0.2413
+    },
+    "Prior centrado | test": {
+      "dice": 0.3525,
+      "dice_std": 0.2106,
+      "iou": 0.2357
+    },
+    "Clásico (Otsu+morfología) | test": {
+      "dice": 0.3242,
+      "dice_std": 0.2251,
+      "iou": 0.2204
+    },
+    "U-Net | val": {
+      "dice": 0.7843,
+      "dice_std": 0.1779,
+      "iou": 0.6735
+    },
+    "U-Net | test": {
+      "dice": 0.7711,
+      "dice_std": 0.2036,
+      "iou": 0.6618
+    }
+  },
+  "forma": {
+    "val | máscara anotada": {
+      "accuracy": 0.3258,
+      "balanced_accuracy": 0.303,
+      "macro_f1": 0.2998
+    },
+    "val | máscara U-Net": {
+      "accuracy": 0.3032,
+      "balanced_accuracy": 0.2883,
+      "macro_f1": 0.2289
+    },
+    "test | máscara anotada": {
+      "accuracy": 0.2438,
+      "balanced_accuracy": 0.2196,
+      "macro_f1": 0.2151
+    },
+    "test | máscara U-Net": {
+      "accuracy": 0.2469,
+      "balanced_accuracy": 0.2493,
+      "macro_f1": 0.1723
+    }
+  },
+  "epocas_entrenadas": 40,
+  "mejor_dice_val": 0.7843,
+  "config": {
+    "archive_dir": "<MAMO_DATA_DIR>",
+    "out_dir": "outputs",
+    "img_size": "256",
+    "context": "3.0",
+    "jitter": "0.2",
+    "min_side": "96",
+    "val_frac": "0.2",
+    "seed": "42",
+    "base_channels": "16",
+    "batch_size": "8",
+    "epochs": "40",
+    "lr": "0.001",
+    "weight_decay": "0.0001",
+    "patience": "10",
+    "threshold": "0.5",
+    "amp": "False"
+  }
+}

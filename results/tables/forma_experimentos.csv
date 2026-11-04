@@ -1,0 +1,29 @@
+sigma,clasificador,conjunto,máscara,n,sin descriptores,exactitud,exactitud balanceada,F1 macro,elegida
+0,árbol (prof. 3),val,máscara anotada,221,0,0.3258,0.303,0.2998,False
+0,árbol (prof. 3),val,máscara U-Net,221,1,0.3032,0.2883,0.2289,False
+0,regresión logística,val,máscara anotada,221,0,0.3258,0.2819,0.2796,False
+0,regresión logística,val,máscara U-Net,221,1,0.2308,0.2548,0.1622,False
+0,random forest,val,máscara anotada,221,0,0.3394,0.3159,0.3021,False
+0,random forest,val,máscara U-Net,221,1,0.2398,0.2414,0.1891,False
+0,clase mayoritaria,val,máscara anotada,221,0,0.2489,0.25,0.0996,False
+0,clase mayoritaria,val,máscara U-Net,221,1,0.2443,0.2455,0.0982,False
+2,árbol (prof. 3),val,máscara anotada,221,0,0.362,0.3011,0.2614,False
+2,árbol (prof. 3),val,máscara U-Net,221,1,0.2081,0.2287,0.1456,False
+2,regresión logística,val,máscara anotada,221,0,0.2896,0.2928,0.2629,False
+2,regresión logística,val,máscara U-Net,221,1,0.2534,0.2867,0.1963,False
+2,random forest,val,máscara anotada,221,0,0.2941,0.2665,0.2572,False
+2,random forest,val,máscara U-Net,221,1,0.2036,0.2101,0.1534,False
+2,clase mayoritaria,val,máscara anotada,221,0,0.2489,0.25,0.0996,False
+2,clase mayoritaria,val,máscara U-Net,221,1,0.2443,0.2455,0.0982,False
+4,árbol (prof. 3),val,máscara anotada,221,0,0.3575,0.3199,0.3014,True
+4,árbol (prof. 3),val,máscara U-Net,221,1,0.2489,0.2534,0.1748,True
+4,regresión logística,val,máscara anotada,221,0,0.2986,0.3019,0.2745,False
+4,regresión logística,val,máscara U-Net,221,1,0.267,0.2963,0.2119,False
+4,random forest,val,máscara anotada,221,0,0.3122,0.3022,0.2857,False
+4,random forest,val,máscara U-Net,221,1,0.2443,0.23,0.2083,False
+4,clase mayoritaria,val,máscara anotada,221,0,0.2489,0.25,0.0996,False
+4,clase mayoritaria,val,máscara U-Net,221,1,0.2443,0.2455,0.0982,False
+4,árbol (prof. 3),test,máscara anotada,324,0,0.2685,0.2629,0.2352,True
+4,árbol (prof. 3),test,máscara U-Net,324,1,0.2685,0.2944,0.2186,True
+4,clase mayoritaria,test,máscara anotada,324,0,0.2809,0.25,0.1096,False
+4,clase mayoritaria,test,máscara U-Net,324,1,0.2778,0.2473,0.1087,False

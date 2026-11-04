@@ -1,0 +1,11 @@
+prueba,entrada,clasificador,conjunto,n,AUC,exactitud balanceada
+1) tamaño -> patología,side_px,regresión logística,val,257,0.5523,0.5578
+1) tamaño -> patología,side_px,regresión logística,test,378,0.6078,0.5853
+1) tamaño -> patología,lesion_area_frac,regresión logística,val,257,0.5658,0.5612
+1) tamaño -> patología,lesion_area_frac,regresión logística,test,378,0.5101,0.5182
+1) tamaño -> patología,side_px + lesion_area_frac,regresión logística,val,257,0.5705,0.5771
+1) tamaño -> patología,side_px + lesion_area_frac,regresión logística,test,378,0.6024,0.5912
+2) ROUND vs IRREGULAR,8 descriptores (σ=0),regresión logística,val,104,0.6712,0.5697
+2) ROUND vs IRREGULAR,8 descriptores (σ=0),regresión logística,test,154,0.5806,0.5536
+2) ROUND vs IRREGULAR,8 descriptores (σ=0),random forest,val,104,0.6412,0.5816
+2) ROUND vs IRREGULAR,8 descriptores (σ=0),random forest,test,154,0.5659,0.5458
