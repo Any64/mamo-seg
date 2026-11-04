@@ -1,0 +1,5 @@
+ejecucion,semilla_entrenamiento,dice_val,iou_val,dice_test,iou_test,epocas,mejor_epoca
+main,42.0,0.7806,0.672,0.7692,0.6615,40.0,36.0
+final_seed43,43.0,0.7749,0.6614,0.7519,0.6398,40.0,39.0
+final_seed44,44.0,0.7754,0.6638,0.7658,0.6531,40.0,36.0
+media ± DE,,0.7770 ± 0.0032,0.6657 ± 0.0056,0.7623 ± 0.0092,0.6515 ± 0.0109,,

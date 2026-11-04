@@ -1,0 +1,31 @@
+{
+  "bootstrap": {
+    "n_boot": 1000,
+    "semilla": 42,
+    "nivel": 0.95,
+    "metodo": "percentil"
+  },
+  "diferencia_unet_menos_clasico": {
+    "recortes": {
+      "media": 0.4449602664611365,
+      "ic_inf": 0.4203538652143572,
+      "ic_sup": 0.4691806599627999,
+      "n_boot": 1000
+    },
+    "pacientes": {
+      "media": 0.4449602664611365,
+      "ic_inf": 0.41793480820635487,
+      "ic_sup": 0.4714895351500464,
+      "n_boot": 1000
+    }
+  },
+  "wilcoxon_unet_vs_clasico": {
+    "n": 378,
+    "estadistico_W": 1066.0,
+    "p_valor": 4.5617500015535847e-60,
+    "mediana_diferencia": 0.5102382650064532,
+    "media_diferencia": 0.4449602664611365,
+    "frac_a_mejor": 0.9391534391534392
+  },
+  "ejecucion": "main"
+}

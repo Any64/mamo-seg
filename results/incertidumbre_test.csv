@@ -1,0 +1,4 @@
+método,n_recortes,n_pacientes,dice_medio,ic95_inf_recortes,ic95_sup_recortes,ic95_inf_pacientes,ic95_sup_pacientes
+U-Net,378,201,0.7692,0.7463,0.7909,0.7461,0.7952
+Clásico (Otsu+morfología),378,201,0.3242,0.3016,0.3478,0.2993,0.354
+Prior centrado,378,201,0.3525,0.3301,0.3755,0.3325,0.3739
