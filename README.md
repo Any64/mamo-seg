@@ -125,9 +125,9 @@ Alternativa interactiva: abrir `notebooks/proyecto_mamografia.ipynb` (usa las mi
 
 ```powershell
 python scripts/run_experiment.py --config configs/main.yaml   # E1: ~13 min en GTX 1650 (con recortes en caché)
-python scripts/shape_ablation.py                              # E2: necesita los pesos de E1 (~3 min)
-python scripts/shape_control.py                               # E3 (~2 min)
-python scripts/shape_diagnostics.py                           # E4 (~1 min)
+python scripts/shape_ablation.py                              # E2: necesita los pesos de E1 (~2 min)
+python scripts/shape_control.py                               # E3 (~1 min)
+python scripts/shape_diagnostics.py                           # E4 (<1 min)
 ```
 
 Opciones de `run_experiment.py`: `--seed N`, `--epochs N`, `--name <carpeta>`, `--data-dir <ruta>`,
@@ -161,7 +161,9 @@ Test oficial de CBIS-DDSM (378 masas); validación: 257 masas de pacientes no vi
 
 La U-Net se entrenó 40 épocas (mejor Dice de validación 0.784 en la época 37). El 3.4 % de los recortes de test
 tiene Dice < 0.1: son fallos de localización (segmenta otra estructura densa), concentrados en las lesiones más
-desplazadas del centro.
+desplazadas del centro. Una nueva ejecución con `scripts/run_experiment.py` (misma configuración y semilla) dio
+Dice test 0.769 ± 0.212 y 4.2 % de recortes con Dice < 0.1: la variación se debe al no determinismo de cuDNN en GPU;
+las referencias y las tablas de forma con máscara anotada se reproducen exactamente.
 
 **Forma BI-RADS (4 clases; azar = 0.25)**
 
