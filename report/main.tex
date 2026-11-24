@@ -1,0 +1,149 @@
+% Informe final CBM423 -- estructura. Las cifras provienen de results/ (ver results/README.md).
+\documentclass[11pt,a4paper]{article}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage[hidelinks]{hyperref}
+\usepackage[numbers]{natbib}
+\graphicspath{{figures/}}
+\sisetup{output-decimal-marker={.}}
+
+\title{Segmentación de masas mamarias en CBIS-DDSM con U-Net\\y caracterización de su forma según BI-RADS 2025}
+\author{CBM423 -- Procesamiento Digital de Imágenes Médicas\\Universidad de Valparaíso}
+\date{Diciembre de 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+% TODO: 150--250 palabras. Resultado principal: Dice 0.762 ± 0.009 en el test oficial (3 semillas),
+% frente a 0.32--0.35 de las referencias; la forma y el margen BI-RADS no se recuperan desde la geometría
+% de las máscaras de CBIS-DDSM.
+\end{abstract}
+
+\section{Introducción}
+% TODO: motivación clínica, segmentación de masas, léxico BI-RADS \citep{acr2025birads}, objetivos.
+
+\section{Datos}
+% TODO: CBIS-DDSM \citep{lee2017cbisddsm}; 1696 masas; división por paciente (train 1061, val 257,
+% test oficial 378 de 201 pacientes); las máscaras están en coordenadas de la mamografía completa.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{muestras_recortes.png}
+  \caption{Recortes ROI propios con el contorno anotado.}
+  \label{fig:recortes}
+\end{figure}
+
+\section{Métodos}
+\subsection{Recortes ROI y desplazamiento aleatorio}
+% TODO: context = 3, jitter = 0.2, 256 x 256; por qué no se usan los recortes oficiales.
+\subsection{Segmentación}
+% TODO: U-Net \citep{ronneberger2015unet} (base 16, 1.94 M parámetros), BCE + Dice, AdamW, early stopping.
+% Referencias: prior centrado y Otsu \citep{otsu1979} + morfología.
+\subsection{Forma y margen desde la geometría}
+% TODO: 8 descriptores, árbol de profundidad 3; protocolo: ajuste en train, selección en validación, test una vez.
+\subsection{Evaluación estadística}
+% TODO: 3 semillas, validación cruzada de 5 particiones por paciente, IC bootstrap (1000) por recorte y por
+% paciente, Wilcoxon pareado, Kruskal-Wallis con Holm. Hausdorff 95 en px del recorte.
+
+\section{Resultados}
+\subsection{Segmentación}
+
+\begin{table}[ht]
+  \centering
+  \caption{Segmentación (media ± DE de 3 semillas de entrenamiento para la U-Net).}
+  \label{tab:segmentacion}
+  \begin{tabular}{lcccc}
+    \toprule
+    Método & Dice val & Dice test & IoU test & HD95 test (px, mediana) \\
+    \midrule
+    Prior centrado & 0.344 & 0.352 & 0.236 & -- \\
+    Clásico (Otsu + morfología) & 0.348 & 0.324 & 0.220 & -- \\
+    \textbf{U-Net} & \textbf{0.777 ± 0.003} & \textbf{0.762 ± 0.009} & \textbf{0.652 ± 0.011} & \textbf{15.4 ± 1.4} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% TODO: CV por paciente 0.771 ± 0.014; IC 95 % (semilla 42) U-Net 0.769 [0.746, 0.791];
+% U-Net − clásico +0.445 [0.420, 0.469], Wilcoxon p ≈ 5e-60.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{variabilidad_incertidumbre.png}
+  \caption{IC 95 \% en test, dispersión entre semillas y entre particiones de la validación cruzada.}
+  \label{fig:variabilidad}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{predicciones_test.png}
+  \caption{Predicciones de la U-Net en test.}
+  \label{fig:predicciones}
+\end{figure}
+
+\subsection{Ablaciones}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{ablaciones.png}
+  \caption{Ablaciones en validación. Sin desplazamiento (jitter 0) el prior centrado supera a la U-Net.}
+  \label{fig:ablaciones}
+\end{figure}
+
+\subsection{Dónde falla la U-Net}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{estratificado_test.png}
+  \caption{Dice en test por subgrupo (Kruskal-Wallis con ajuste de Holm).}
+  \label{fig:estratificado}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{fallos_por_modo.png}
+  \caption{Recortes de test con Dice $< 0.1$ por modo de fallo.}
+  \label{fig:fallos}
+\end{figure}
+
+\subsection{Forma y margen BI-RADS}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{control_forma_roc.png}
+  \caption{Controles de la forma: descriptores frente a la etiqueta del radiólogo.}
+  \label{fig:control-forma}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{margen_roc.png}
+  \caption{Margen desde los descriptores y patología desde el margen.}
+  \label{fig:margen}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{diagnostico_mascaras.png}
+  \caption{Máscaras anotadas ROUND e IRREGULAR: contornos toscos e independientes de la forma.}
+  \label{fig:mascaras}
+\end{figure}
+
+\section{Discusión}
+% TODO: atajo de posición; dificultad (sutileza, densidad) frente al tipo de lesión; límite de las máscaras
+% para la forma y el margen; comparación con la literatura.
+
+\section{Limitaciones}
+% TODO: película digitalizada; posición aproximada conocida; máscaras toscas; variabilidad entre lectores;
+% pocas semillas; p-valores optimistas por recortes del mismo paciente; no determinismo de cuDNN.
+
+\section{Conclusiones}
+% TODO
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+\end{document}

@@ -1,21 +1,30 @@
 # Resultados finales (versionados)
 
-Tablas y figuras que usa el informe (`report/`). Provienen de la ejecución de la entrega parcial
-(octubre de 2026, GTX 1650, `configs/main.yaml`: img 256, context 3, jitter 0.2, U-Net base 16, batch 8,
-40 épocas, semilla 42). Todo lo regenerable y pesado (recortes, pesos) queda en `outputs/`, fuera de git.
+Tablas y figuras que usa el informe (`report/`). `tables/` y las figuras de E1–E4 provienen de la ejecución de la
+entrega parcial (octubre de 2026, GTX 1650, `configs/main.yaml`: img 256, context 3, jitter 0.2, U-Net base 16,
+batch 8, 40 épocas, semilla 42). Los CSV/JSON de la raíz de `results/` y sus figuras son de la fase final (E5–E11,
+noviembre de 2026). Todo lo regenerable y pesado (recortes, pesos, máscaras predichas) queda en `outputs/`, fuera de git.
 
 Para regenerarlos (ver README principal):
 
-| Experimento | Comando | Salida |
-|---|---|---|
-| **E1** Principal: U-Net + referencias + forma (árbol) | `python scripts/run_experiment.py --config configs/main.yaml` | `outputs/runs/main/` |
-| **E2** Ablación de la forma (suavizado × clasificador) | `python scripts/shape_ablation.py` | `outputs/runs/main/shape_ablation/` |
-| **E3** Control de los descriptores (patología, 2 clases, etiqueta) | `python scripts/shape_control.py` | `outputs/runs/main/shape_control/` |
-| **E4** Diagnóstico (tamaño, ROUND vs IRREGULAR, emparejamiento) | `python scripts/shape_diagnostics.py` | `outputs/runs/main/shape_diagnostics/` |
-| **E5** Ablaciones (solo validación, semilla 42) | `python scripts/run_ablations.py` | `outputs/runs/abl_*/` |
-| **E6** Semillas 43 y 44 (42 = E1) | `python scripts/run_experiment.py --config configs/main.yaml --train-seed 43 --name final_seed43` (ídem 44) | `outputs/runs/final_seed4*/` |
-| **E7** Validación cruzada de 5 particiones por paciente (train oficial) | `python scripts/cross_validate.py --config configs/main.yaml --folds 5` | `outputs/runs/main_cv5/` |
-| **E8** Variabilidad e incertidumbre (bootstrap, Wilcoxon; no entrena) | `python scripts/final_statistics.py --runs main final_seed43 final_seed44 --cv main_cv5` | `results/` |
+| Experimento | Comando | Salida | Tiempo (GTX 1650) |
+|---|---|---|---|
+| **E1** Principal: U-Net + referencias + forma (árbol) | `python scripts/run_experiment.py --config configs/main.yaml` | `outputs/runs/main/` | ~13 min |
+| **E2** Ablación de la forma (suavizado × clasificador) | `python scripts/shape_ablation.py` | `outputs/runs/main/shape_ablation/` | ~2 min |
+| **E3** Control de los descriptores (patología, 2 clases, etiqueta) | `python scripts/shape_control.py` | `outputs/runs/main/shape_control/` | ~1 min |
+| **E4** Diagnóstico (tamaño, ROUND vs IRREGULAR, emparejamiento) | `python scripts/shape_diagnostics.py` | `outputs/runs/main/shape_diagnostics/` | < 1 min |
+| **E5** Ablaciones (solo validación, semilla 42) | `python scripts/run_ablations.py` | `outputs/runs/abl_*/` → `ablaciones.csv` | ~1 h 45 min |
+| **E6** Semillas 43 y 44 (42 = E1) | `python scripts/run_experiment.py --config configs/main.yaml --train-seed 43 --name final_seed43` (ídem 44) | `outputs/runs/final_seed4*/` | ~12 min c/u |
+| **E7** Validación cruzada de 5 particiones por paciente (train oficial) | `python scripts/cross_validate.py --config configs/main.yaml --folds 5` | `outputs/runs/main_cv5/` | ~55 min |
+| **E8** Variabilidad e incertidumbre (bootstrap, Wilcoxon; no entrena) | `python scripts/final_statistics.py --runs main final_seed43 final_seed44 --cv main_cv5` | `results/` | < 1 min |
+| **E9** Análisis estratificado en test (no entrena) | `python scripts/stratified_analysis.py` | `results/estratificado_*` | < 1 min |
+| **E10** Margen BI-RADS desde la geometría (no usa la U-Net) | `python scripts/margin_experiment.py` | `results/margen_*` | ~1 min |
+| **E11** Análisis de fallos (no entrena) | `python scripts/failure_analysis.py` | `results/fallos_*` | < 1 min |
+| **E12** Morph-UNet y posprocesamiento fijo (**en curso**; resultados no incluidos en esta versión) | `configs/morph_unet*.yaml` con `run_experiment.py --no-test`, luego `python scripts/compare_morphology.py` | `outputs/runs/morph_*`, `results/morfologia_*` | ~40 min por entrenamiento |
+
+**Cifra de referencia** (configuración final, media ± DE de 3 semillas): Dice de la U-Net 0.777 ± 0.003 en
+validación y **0.762 ± 0.009 en test**; validación cruzada por paciente 0.771 ± 0.014 (ver `variabilidad_semillas.csv`
+y `cv_paciente.csv`). Las tablas de `tables/` son de la ejecución de la entrega parcial (semilla 42, Dice test 0.771).
 
 E2 necesita los pesos de E1. E3 y E4 solo necesitan los recortes en caché (los genera E1). Los resultados de E1
 pueden variar ligeramente entre ejecuciones en GPU (cuDNN no es completamente determinista).
@@ -74,7 +83,7 @@ configuración final (`configs/main.yaml`, sin cambios). Resumen e interpretaci�
 | `pruebas_test.json` | E8 | IC de la diferencia U-Net − clásico y Wilcoxon pareado sobre el Dice por recorte |
 | `figures/variabilidad_incertidumbre.png` | E6–E8 | IC en test, dispersión entre semillas y entre particiones |
 
-## Análisis sobre los modelos entrenados (sin reentrenar)
+## Análisis sobre los modelos entrenados (E9–E11, sin reentrenar)
 
 Resumen e interpretación en `resumen_analisis.md`. Comandos: `scripts/stratified_analysis.py`,
 `scripts/margin_experiment.py`, `scripts/failure_analysis.py`; demostración en `notebooks/demo_resultados.ipynb`.

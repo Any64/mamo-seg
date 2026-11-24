@@ -5,62 +5,69 @@ Proyecto del curso **CBM423 – Procesamiento Digital de Imágenes Médicas** (U
 ## Descripción
 
 1. **Segmentación:** una U-Net segmenta masas mamarias en recortes ROI de mamografías del dataset CBIS-DDSM.
-2. **Comparación:** su desempeño (Dice, IoU) se compara con un método clásico de procesamiento de imágenes
-   (suavizado + umbral de Otsu + morfología matemática) y con un control "prior centrado" (círculo fijo en el centro).
-3. **Forma BI-RADS:** a partir de la máscara se calculan descriptores geométricos del contorno y un árbol de
+2. **Comparación:** su desempeño (Dice, IoU, Hausdorff 95) se compara con un método clásico de procesamiento de
+   imágenes (suavizado + umbral de Otsu + morfología matemática) y con un control "prior centrado" (círculo fijo en
+   el centro).
+3. **Forma y margen BI-RADS:** a partir de la máscara se calculan descriptores geométricos del contorno y un árbol de
    decisión de profundidad 3 (interpretable) asigna la forma `ROUND / OVAL / LOBULATED / IRREGULAR` (léxico BI-RADS
-   v2025). Se valida contra el campo `mass shape` del dataset, con máscaras anotadas y con máscaras de la U-Net.
+   v2025). Se valida contra los campos `mass shape` y `mass margins` del dataset.
 
-**Resultado principal:** la U-Net alcanza Dice 0.771 en el test oficial (vs. 0.35 de las referencias). La forma
-BI-RADS, en cambio, queda al nivel del azar incluso con las máscaras anotadas; los experimentos de control muestran
-que es una limitación de las máscaras de CBIS-DDSM y no un error del pipeline (ver [Resultados](#resultados)).
+**Resultado principal:** la U-Net alcanza un Dice de **0.762 ± 0.009 en el test oficial** (media ± DE de 3 semillas;
+validación cruzada por paciente: 0.771 ± 0.014), frente a 0.32–0.35 de las referencias. La forma y el margen BI-RADS,
+en cambio, no se recuperan desde la geometría de las máscaras, ni siquiera con las máscaras anotadas: los controles
+muestran que es una limitación de las máscaras de CBIS-DDSM y no un error del pipeline (ver [Resultados](#resultados)).
 
-> **Decisiones de diseño.** (1) En CBIS-DDSM la máscara ROI está en las coordenadas de la mamografía *completa* y no
-> está registrada con el recorte oficial: por eso se generan recortes propios desde la mamografía completa y la
-> máscara (`src/preprocess.py`). (2) El centro del recorte se desplaza al azar (`jitter=0.2`): sin ese
-> desplazamiento, un círculo centrado lograba Dice 0.857 y la tarea era casi trivial. (3) La división
-> train/validación es por paciente y el test oficial solo se usa en la evaluación final.
+> **Decisiones de diseño.**
+> 1. En CBIS-DDSM la máscara ROI está en las coordenadas de la mamografía *completa* y no está registrada con el
+>    recorte oficial. Por eso se generan recortes propios desde la mamografía completa y la máscara
+>    (`src/preprocess.py`).
+> 2. El centro del recorte se desplaza al azar (`jitter=0.2`). Sin ese desplazamiento, un círculo centrado logra un
+>    Dice de 0.857 y supera a la U-Net (ablación E5), así que la tarea sería casi trivial.
+> 3. La división train/validación es por paciente. Todas las comparaciones y selecciones se hacen con validación (o
+>    con validación cruzada sobre el train oficial); el test oficial solo se reporta para la configuración final.
 
 ## Estructura del repositorio
 
 ```
-configs/        configuraciones YAML de los experimentos (main.yaml = resultados del informe; quick.yaml = demo)
+configs/        configuraciones YAML (main.yaml = configuración final; quick.yaml = demo; ablations.yaml;
+                morph_unet*.yaml = U-Net con bloque morfológico)
 src/            librería
   config.py       parámetros (dataclass Config) y carga de YAML
   data_index.py   lectura de CSV y resolución de rutas (particularidades de la versión de Kaggle)
-  preprocess.py   recortes ROI alineados, etiquetas de forma, chequeo de alineación
+  preprocess.py   recortes ROI alineados (en paralelo), etiquetas de forma, chequeo de alineación
   data_utils.py   división por paciente, normalización
   dataset.py      tensores y aumento de datos (torch)
-  model.py        U-Net
-  losses.py       BCE + Dice
-  metrics.py      Dice, IoU, precisión, sensibilidad
+  model.py        U-Net y Morph-UNet (build_model según cfg.arch)
+  morph.py        capas morfológicas aprendibles (p-convolución / media contra-armónica)
+  losses.py       BCE + Dice y solo Dice
+  metrics.py      Dice, IoU, precisión, sensibilidad, Hausdorff 95, componentes conexas
+  postprocess.py  posprocesamiento morfológico fijo (apertura/cierre + componente mayor)
+  stats.py        IC bootstrap (por recorte y por paciente) y Wilcoxon pareado
   train.py        entrenamiento con early stopping
   classical.py    métodos de referencia (prior centrado; Otsu + morfología)
-  shape.py        descriptores geométricos, árbol de decisión y clasificadores de los experimentos de forma
-  pipeline.py     pipeline completo (lo comparten el script principal y el notebook)
+  shape.py        descriptores geométricos, árbol de decisión y clasificadores
+  pipeline.py     pipeline completo, validación cruzada por paciente, caché de predicciones
   viz.py, cli.py  figuras; argumentos comunes de los scripts
-scripts/        ejecutables
-  download_data.py      descarga/verifica el dataset
-  run_experiment.py     experimento principal (preprocesa, entrena, evalúa, guarda)
-  shape_ablation.py     forma: suavizado del contorno × clasificador
-  shape_control.py      forma: controles (patología, 2 clases, etiqueta vs geometría)
-  shape_diagnostics.py  forma: tamaño, extremos ROUND/IRREGULAR, emparejamiento de datos
-notebooks/      demostración paso a paso (proyecto_mamografia.ipynb; build_notebook.py lo genera)
+scripts/        ejecutables (ver la tabla de experimentos)
+notebooks/      proyecto_mamografia.ipynb (paso a paso, entrena) y demo_resultados.ipynb (sin entrenar);
+                build_notebook.py y build_demo.py los generan
 tests/          pruebas con un dataset sintético (sin datos reales ni red)
-results/        tablas y figuras finales usadas en el informe (versionadas; ver results/README.md)
-docs/DATA.md    origen, estructura y particularidades del dataset
-report/         informe (LaTeX)
-outputs/        todo lo generado: caché de recortes, pesos, ejecuciones (NO versionado)
+results/        tablas y figuras finales (versionadas; ver results/README.md)
+report/         estructura del informe (LaTeX) con las figuras finales
+docs/           DATA.md (dataset) y GUIA_REPOSITORIO.md (archivo por archivo)
+outputs/        todo lo generado: caché de recortes, pesos, ejecuciones, logs (NO versionado)
 ```
+
+Guía detallada en [docs/GUIA_REPOSITORIO.md](docs/GUIA_REPOSITORIO.md).
 
 ## Requisitos
 
 * Python 3.10 o superior (probado con 3.11.9 en Windows 11).
 * Paquetes de `requirements.txt` (numpy, scipy, pandas, scikit-image, scikit-learn, matplotlib, PyTorch, PyYAML,
   Jupyter, pytest).
-* GPU NVIDIA recomendada (probado con una GTX 1650 de 4 GB: ~16 s por época). Sin GPU funciona en CPU, mucho más
-  lento.
-* ~6 GB de disco para el dataset y ~100 MB para `outputs/`.
+* GPU NVIDIA recomendada (probado con una GTX 1650 de 4 GB: ~16 s por época con la U-Net y ~60 s con la Morph-UNet).
+  Sin GPU funciona en CPU, mucho más lento.
+* ~6 GB de disco para el dataset y ~1 GB para `outputs/`.
 
 ## Instalación
 
@@ -111,33 +118,43 @@ Detalles y particularidades del dataset en [docs/DATA.md](docs/DATA.md).
 
 ## Ejecución
 
-### Demo rápida (3 épocas)
+### Demo rápida
 
 ```powershell
-python scripts/run_experiment.py --config configs/quick.yaml
+python scripts/run_experiment.py --config configs/quick.yaml     # entrena 3 épocas (~1 min en GPU)
 ```
 
-La primera ejecución genera los recortes (~11 min, se guardan en `outputs/processed/` y se reutilizan); luego
-entrena 3 épocas (~1 min en GPU). Resultados en `outputs/runs/quick/`. Con 3 épocas la U-Net ya supera a las
-referencias (Dice test ≈ 0.6).
+La primera ejecución genera los recortes (~3 min con 8 procesos; se guardan en `outputs/processed/` y se
+reutilizan). Para ver los resultados del modelo final **sin entrenar** (necesita los pesos de E1), abrir
+`notebooks/demo_resultados.ipynb`: métricas, galería de aciertos y fallos, forma BI-RADS y `mostrar_caso(i)`
+(< 1 min). El notebook `proyecto_mamografia.ipynb` recorre el experimento principal paso a paso (`MAMO_EPOCHS=3`
+para la versión rápida).
 
-Alternativa interactiva: abrir `notebooks/proyecto_mamografia.ipynb` (usa las mismas funciones de `src/`;
-`MAMO_EPOCHS=3` para la versión rápida).
+### Experimentos
 
-### Reproducir los resultados principales
+Tiempos medidos en una GTX 1650 de 4 GB con los recortes en caché. Cada entrenamiento guarda en
+`outputs/runs/<name>/`: `config.yaml`, `metrics.json`, `per_sample.csv`, `history.csv`, `train.log`,
+`unet_best.pt`, tablas y `figures/`. La correspondencia con `results/` está en [results/README.md](results/README.md).
 
-```powershell
-python scripts/run_experiment.py --config configs/main.yaml   # E1: ~13 min en GTX 1650 (con recortes en caché)
-python scripts/shape_ablation.py                              # E2: necesita los pesos de E1 (~2 min)
-python scripts/shape_control.py                               # E3 (~1 min)
-python scripts/shape_diagnostics.py                           # E4 (<1 min)
-```
+| Exp. | Qué hace | Comando | Salida | Tiempo |
+|---|---|---|---|---|
+| E1 | Principal: U-Net + referencias + forma (semilla 42) | `python scripts/run_experiment.py --config configs/main.yaml` | `outputs/runs/main/` | ~13 min |
+| E2 | Forma: suavizado × clasificador (necesita E1) | `python scripts/shape_ablation.py` | `outputs/runs/main/shape_ablation/` | ~2 min |
+| E3 | Forma: controles (patología, 2 clases, etiqueta) | `python scripts/shape_control.py` | `outputs/runs/main/shape_control/` | ~1 min |
+| E4 | Forma: tamaño, ROUND vs IRREGULAR, emparejamiento | `python scripts/shape_diagnostics.py` | `outputs/runs/main/shape_diagnostics/` | < 1 min |
+| E5 | Ablaciones en validación: context, jitter, canales, pérdida | `python scripts/run_ablations.py` | `outputs/runs/abl_*/`, `results/ablaciones.*` | ~1 h 45 min |
+| E6 | Semillas 43 y 44 (42 = E1) | `python scripts/run_experiment.py --config configs/main.yaml --train-seed 43 --name final_seed43` (ídem 44) | `outputs/runs/final_seed4*/` | ~12 min c/u |
+| E7 | Validación cruzada de 5 particiones por paciente (train oficial) | `python scripts/cross_validate.py --config configs/main.yaml --folds 5` | `outputs/runs/main_cv5/` | ~55 min |
+| E8 | Variabilidad e incertidumbre (bootstrap, Wilcoxon) | `python scripts/final_statistics.py --runs main final_seed43 final_seed44 --cv main_cv5` | `results/` | < 1 min |
+| E9 | Análisis estratificado en test | `python scripts/stratified_analysis.py` | `results/estratificado_*` | < 1 min* |
+| E10 | Margen BI-RADS desde la geometría | `python scripts/margin_experiment.py` | `results/margen_*` | ~1 min |
+| E11 | Análisis de fallos (Dice < 0.1) | `python scripts/failure_analysis.py` | `results/fallos_*` | < 1 min* |
+| E12 | Morph-UNet y posprocesamiento fijo (**en curso**) | `python scripts/run_experiment.py --config configs/morph_unet.yaml --no-test --name morph_unet_s42` (y `morph_unet_skip.yaml`; semillas con `--train-seed`), luego `python scripts/compare_morphology.py ...` (ver su docstring) | `outputs/runs/morph_*`, `results/morfologia_*` | ~40 min por entrenamiento |
 
-Opciones de `run_experiment.py`: `--seed N`, `--epochs N`, `--name <carpeta>`, `--data-dir <ruta>`,
-`--no-figures`. Cada ejecución guarda en `outputs/runs/<name>/`: `config.yaml` (configuración usada),
-`metrics.json`, `per_sample.csv` (métricas por recorte de los 3 métodos), `history.csv`, `train.log`,
-`unet_best.pt`, tablas CSV y `figures/`. La correspondencia con `results/` está en
-[results/README.md](results/README.md).
+\* E9 y E11 predicen una vez con los modelos de E1/E6 y guardan las máscaras en `outputs/runs/<run>/pred_masks.npz`.
+
+Opciones de `run_experiment.py`: `--seed N` (datos), `--train-seed N` (solo pesos, lotes y aumento), `--epochs N`,
+`--name <carpeta>`, `--data-dir <ruta>`, `--no-test` (solo validación), `--no-figures`.
 
 ### Pruebas
 
@@ -145,63 +162,83 @@ Opciones de `run_experiment.py`: `--seed N`, `--epochs N`, `--name <carpeta>`, `
 python -m pytest -q tests
 ```
 
-Generan un dataset sintético con la misma estructura que el de Kaggle y verifican el pipeline completo (resolución de
-rutas, alineación, referencias, forma, entrenamiento, `run_experiment.py` de punta a punta y `download_data.py` sin
-red). Tardan ~1 min.
+Generan un dataset sintético con la misma estructura que el de Kaggle y verifican el pipeline completo (rutas,
+alineación, referencias, forma, entrenamiento, `run_experiment.py` de punta a punta, validación cruzada por
+paciente, estadística, capas morfológicas frente a scipy, Hausdorff 95, posprocesamiento, notebook de demostración y
+`download_data.py` sin red). 42 pruebas, ~1 min.
 
 ## Resultados
 
-Test oficial de CBIS-DDSM (378 masas); validación: 257 masas de pacientes no vistos en entrenamiento
-(entrenamiento: 1061). Media ± desviación estándar por recorte.
+Test oficial de CBIS-DDSM: 378 masas de 201 pacientes. Validación: 257 masas de pacientes no vistos en el
+entrenamiento (1061 masas).
 
-**Segmentación (E1)**
+### Tabla final (cifra de referencia: media ± DE de 3 semillas de entrenamiento)
 
-| Método | Dice val | Dice test | IoU test |
+| Método | Dice val | Dice test | IoU test | HD95 test (px, mediana) | Dice < 0.1 (test) |
+|---|---|---|---|---|---|
+| Prior centrado | 0.344 | 0.352 | 0.236 | – | – |
+| Clásico (Otsu + morfología) | 0.348 | 0.324 | 0.220 | – | – |
+| **U-Net** (configuración final) | **0.777 ± 0.003** | **0.762 ± 0.009** | **0.652 ± 0.011** | **15.4 ± 1.4** | 3.5 % ± 0.8 % |
+
+- **Validación cruzada de 5 particiones agrupada por paciente** (train oficial, E7): U-Net 0.771 ± 0.014 y prior
+  0.348 ± 0.021.
+- **Incertidumbre en test** (semilla 42, E8): IC 95 % por bootstrap de 1000 remuestreos para U-Net 0.769 [0.746, 0.791]
+  y clásico 0.324 [0.302, 0.348]. La diferencia U-Net − clásico es +0.445 [0.420, 0.469] (también remuestreando
+  pacientes); Wilcoxon pareado p ≈ 5·10⁻⁶⁰, con la U-Net mejor en el 94 % de los recortes.
+- Las referencias son deterministas, así que no tienen DE entre semillas.
+- El HD95 está en píxeles del recorte de 256 × 256; las predicciones vacías (2–3 por semilla) se cuentan aparte.
+
+### Ablaciones (E5, solo validación, semilla 42)
+
+| Variante | Dice U-Net | Dice prior | Lectura |
 |---|---|---|---|
-| Prior centrado | 0.344 | 0.352 ± 0.211 | 0.236 |
-| Clásico (Otsu + morfología) | 0.348 | 0.324 ± 0.225 | 0.220 |
-| **U-Net** | **0.784** | **0.771 ± 0.204** | **0.662** |
+| Referencia (context 3, jitter 0.2, base 16, BCE+Dice) | 0.781 | 0.345 | — |
+| context 2 / 4 | 0.802 / 0.762 | 0.531 / 0.207 | la tarea se hace más fácil o más difícil; no se usa para elegir |
+| jitter 0 / 0.1 / 0.3 | 0.839 / 0.825 / 0.753 | **0.857** / 0.631 / 0.161 | sin jitter, el prior supera a la U-Net (atajo de posición) |
+| base 32 | 0.767 | 0.345 | no mejora, con 2,3 veces más tiempo por época |
+| solo Dice | 0.767 | 0.345 | no mejora |
 
-La U-Net se entrenó 40 épocas (mejor Dice de validación 0.784 en la época 37). El 3.4 % de los recortes de test
-tiene Dice < 0.1: son fallos de localización (segmenta otra estructura densa), concentrados en las lesiones más
-desplazadas del centro. Una nueva ejecución con `scripts/run_experiment.py` (misma configuración y semilla) dio
-Dice test 0.769 ± 0.212 y 4.2 % de recortes con Dice < 0.1: la variación se debe al no determinismo de cuDNN en GPU;
-las referencias y las tablas de forma con máscara anotada se reproducen exactamente.
+### Dónde falla (E9, E11)
 
-**Forma BI-RADS (4 clases; azar = 0.25)**
+- **Subgrupos de test:** el Dice baja con la sutileza (de 0.82 con sutileza 5 a 0.58 con sutileza 1) y con la
+  densidad mamaria (de 0.85 con densidad 1 a 0.68 con densidad 4); ambas son significativas tras Holm.
+- **No influyen:** la patología, la vista ni la forma básica.
+- **Fallos (Dice < 0.1, 16 de 378 recortes):** casi todos son de localización, porque la red segmenta otra
+  estructura densa. Se asocian a lesiones más desplazadas, más pequeñas y más sutiles; el desplazamiento no
+  los explica por sí solo.
 
-| Experimento | Máscara | Exactitud | Exactitud balanceada | F1 macro |
-|---|---|---|---|---|
-| E1: árbol de profundidad 3, test | anotada | 0.244 | 0.220 | 0.215 |
-| E1: árbol de profundidad 3, test | U-Net | 0.247 | 0.249 | 0.172 |
-| E2: mejor combinación en val (σ=4, árbol), test | anotada | 0.269 | 0.263 | 0.235 |
-| E2: ídem | U-Net | 0.269 | 0.294 | 0.219 |
-| Clase mayoritaria, test | – | 0.281 | 0.250 | 0.110 |
+### Forma y margen BI-RADS (E1–E4, E10; azar: exactitud 0.25, AUC 0.5)
 
-**Controles (E3, E4; AUC en test)**
-
-| Pregunta | AUC test |
+| Pregunta (test) | Resultado |
 |---|---|
-| Descriptores → patología (benigna / maligna) | 0.506 |
-| Descriptores → forma regular vs irregular | 0.493 |
-| Descriptores → ROUND vs IRREGULAR | 0.58 |
-| Tamaño de la lesión → patología | 0.60 |
-| **Etiqueta de forma del radiólogo → patología** | **0.780** |
+| Forma en 4 clases, árbol de profundidad 3, máscara anotada / U-Net (E1) | exactitud balanceada 0.220 / 0.249 |
+| Mejor combinación en validación (σ = 4, árbol), máscara anotada / U-Net (E2) | 0.263 / 0.294 |
+| Descriptores → patología / forma regular vs irregular (E3) | AUC 0.506 / 0.493 |
+| Descriptores → margen no circunscrito / espiculado (E10) | AUC 0.646 / 0.500 |
+| **Etiqueta de forma del radiólogo → patología** (E3) | **AUC 0.780** |
+| **Etiqueta de margen del radiólogo → patología** (E10) | **AUC 0.782** |
 
-Interpretación: la etiqueta de forma sí contiene información (predice la patología con AUC 0.78), pero la geometría
-de las máscaras de CBIS-DDSM no la refleja; las máscaras son contornos toscos o figuras trazadas con herramienta,
-independientes de la forma anotada. El emparejamiento recorte↔máscara↔fila del CSV se verificó al 100 % (E4).
+**Interpretación:** las etiquetas de forma y de margen sí contienen información, ya que predicen la patología con AUC
+≈ 0.78. Pero la geometría de las máscaras de CBIS-DDSM no la refleja: son contornos toscos, sin espículas e
+independientes de la forma anotada. El emparejamiento recorte ↔ máscara ↔ fila del CSV se verificó al 100 % (E4).
 
 ## Limitaciones
 
 * CBIS-DDSM proviene de mamografías de película digitalizada (años 90), no de mamografía digital moderna (FFDM).
-* El recorte se construye a partir de la caja de la lesión (con un desplazamiento aleatorio), por lo que la posición
-  aproximada es conocida; el control "prior centrado" mide cuánto se explica solo por eso. No es un sistema de
+* El recorte se construye a partir de la caja de la lesión, con un desplazamiento aleatorio, así que la posición
+  aproximada es conocida. El control "prior centrado" mide cuánto se explica solo por eso. No es un sistema de
   detección.
-* Las máscaras ROI de CBIS-DDSM no representan con fidelidad el contorno de la lesión, lo que impide derivar la forma
-  BI-RADS desde la geometría (objetivo 3) en este dataset, con independencia de la calidad de la segmentación.
-* Las etiquetas de forma tienen variabilidad entre lectores y no se dispone de una segunda lectura.
-* Los resultados en GPU pueden variar ligeramente entre ejecuciones (cuDNN no es completamente determinista).
+* Las máscaras ROI de CBIS-DDSM no representan con fidelidad el contorno. Eso impide derivar la forma y el margen
+  BI-RADS desde la geometría en este dataset, con independencia de la calidad de la segmentación.
+* Las etiquetas de forma y margen tienen variabilidad entre lectores, y no hay una segunda lectura.
+* Las ablaciones usan una sola semilla y la variabilidad entre semillas se mide con solo 3. Por eso las diferencias
+  de alrededor de 0.01 entre variantes no se distinguen del ruido.
+* En el análisis estratificado, varios recortes son del mismo paciente y las variables están correlacionadas (por
+  ejemplo, densidad y sutileza). Por eso los p-valores son optimistas.
+* Los resultados en GPU varían ligeramente entre ejecuciones, porque cuDNN no es completamente determinista. Una
+  nueva ejecución de E1 dio un Dice en test de 0.769, frente a 0.771 en la entrega parcial.
+* E12 (Morph-UNet y posprocesamiento morfológico fijo) está implementado y probado, pero sus resultados no estaban
+  disponibles al cerrar esta versión.
 
 ## Referencias
 
@@ -211,4 +248,6 @@ independientes de la forma anotada. El emparejamiento recorte↔máscara↔fila 
   MICCAI. arXiv:1505.04597.
 * Otsu, N. (1979). A threshold selection method from gray-level histograms. *IEEE Trans. Syst. Man Cybern.*, 9(1),
   62–66.
+* Masci, J., Angulo, J., Schmidhuber, J. (2013). A learning framework for morphological operators using
+  counter-harmonic mean. *ISMM 2013*, LNCS 7883, 329–340.
 * American College of Radiology (2025). ACR BI-RADS® Atlas, v2025.
