@@ -59,8 +59,11 @@ def train_unet(cfg: Config, Xtr, Ytr, Xva, Yva, verbose: bool = True,
     set_seed(seed)
     loss_fn = get_loss(cfg.loss)
     device = get_device()
-    xtr, ytr = to_tensors(Xtr, Ytr, device)
-    xva, yva = to_tensors(Xva, Yva, device)
+    # los datos quedan en CPU y cada lote se copia a la GPU: con la Morph-UNet, tenerlos
+    # en la GPU (~0,7 GB) supera los 4 GB de la GTX 1650 y Windows desborda a memoria compartida
+    cpu = torch.device("cpu")
+    xtr, ytr = to_tensors(Xtr, Ytr, cpu)
+    xva, yva = to_tensors(Xva, Yva, cpu)
     Yva_np = np.asarray(Yva)
 
     model = build_model(cfg).to(device)
@@ -93,7 +96,7 @@ def train_unet(cfg: Config, Xtr, Ytr, Xva, Yva, verbose: bool = True,
         for xb, yb in iterate_batches(xtr, ytr, cfg.batch_size, True, gen):
             if len(xb) < 2:  # BatchNorm necesita >1 muestra
                 continue
-            xb, yb = augment_batch(xb, yb)
+            xb, yb = augment_batch(xb.to(device), yb.to(device))
             opt.zero_grad(set_to_none=True)
             with torch.autocast(device_type=device.type, enabled=use_amp):
                 loss = loss_fn(model(xb), yb)
