@@ -17,6 +17,10 @@ validación cruzada por paciente: 0.771 ± 0.014), frente a 0.32–0.35 de las r
 en cambio, no se recuperan desde la geometría de las máscaras, ni siquiera con las máscaras anotadas: los controles
 muestran que es una limitación de las máscaras de CBIS-DDSM y no un error del pipeline (ver [Resultados](#resultados)).
 
+**Informe final:** [report/main.pdf](report/main.pdf). Ya está compilado. Para recompilarlo desde `report/main.tex`, ejecutar
+`pdflatex main`, `bibtex main` y dos veces más `pdflatex main` dentro de `report/` (ver
+[report/README.md](report/README.md)).
+
 > **Decisiones de diseño.**
 > 1. En CBIS-DDSM la máscara ROI está en las coordenadas de la mamografía *completa* y no está registrada con el
 >    recorte oficial. Por eso se generan recortes propios desde la mamografía completa y la máscara
@@ -53,7 +57,7 @@ notebooks/      proyecto_mamografia.ipynb (paso a paso, entrena) y demo_resultad
                 build_notebook.py y build_demo.py los generan
 tests/          pruebas con un dataset sintético (sin datos reales ni red)
 results/        tablas y figuras finales (versionadas; ver results/README.md)
-report/         estructura del informe (LaTeX) con las figuras finales
+report/         informe final: main.pdf (compilado), main.tex, refs.bib y figuras
 docs/           DATA.md (dataset) y GUIA_REPOSITORIO.md (archivo por archivo)
 outputs/        todo lo generado: caché de recortes, pesos, ejecuciones, logs (NO versionado)
 ```

@@ -1,15 +1,25 @@
 # Informe (LaTeX)
 
-- `main.tex`: estructura del informe con las secciones, las tablas de resultados finales y las figuras ya
-  enlazadas. Los párrafos marcados con `% TODO` quedan por redactar.
-- `refs.bib`: referencias (BibTeX).
-- `figures/`: copia de las figuras finales de `results/figures/` (si se regeneran, volver a copiarlas).
+**Informe final: [`main.pdf`](main.pdf)**, ya compilado a partir de `main.tex` y versionado junto al código.
 
-Compilar (requiere una distribución de LaTeX, p. ej. MiKTeX o TeX Live):
+- `main.tex`: fuente del informe final.
+- `refs.bib`: referencias (BibTeX, estilo `plainnat`).
+- `figures/`: copia de las figuras finales de `results/figures/`. Si se regeneran, hay que volver a copiarlas y
+  recompilar.
+
+## Recompilar
+
+Requiere una distribución de LaTeX, por ejemplo MiKTeX o TeX Live, con `pdflatex` y `bibtex`.
 
 ```
 cd report
-latexmk -pdf main.tex        # o: pdflatex main && bibtex main && pdflatex main && pdflatex main
+pdflatex main
+bibtex main
+pdflatex main
+pdflatex main
 ```
+
+Se necesitan dos pasadas finales de `pdflatex` para resolver las citas y las referencias cruzadas. También sirve
+`latexmk -pdf main.tex`, que hace lo mismo.
 
 Los archivos auxiliares (`*.aux`, `*.log`, `*.bbl`...) están en `.gitignore`.

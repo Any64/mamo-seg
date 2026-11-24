@@ -94,6 +94,6 @@ Los notebooks se versionan sin salidas; para cambiarlos se edita el `build_*.py`
 | Ruta | Contenido |
 |---|---|
 | `results/` | Tablas y figuras finales; `README.md` describe cada archivo; `resumen_fase1.md`, `resumen_analisis.md`, `resumen_morfologia.md` y `resumen_segformer.md` son los resúmenes con interpretación |
-| `report/` | Esqueleto LaTeX del informe (`main.tex`, `refs.bib`) y copia de las figuras finales en `figures/` |
+| `report/` | Informe final: `main.pdf` (compilado), fuente `main.tex`, `refs.bib` y copia de las figuras finales en `figures/`; cómo recompilar en `report/README.md` |
 | `docs/DATA.md` | Origen, estructura y particularidades del dataset |
 | `outputs/` (no versionado) | `processed/` (recortes), `runs/<name>/` (cada ejecución), `logs/`, zips de entrega |
