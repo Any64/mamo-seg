@@ -35,7 +35,7 @@ class Config:
     morph_channels: int = 4   # morph_unet: canales del bloque morfológico
     morph_kernel: int = 5     # morph_unet: lado del elemento estructurante
     morph_position: str = "head"  # morph_unet: "head" (antes de la cabeza 1x1) o "skip" (salto de máxima resolución)
-    pretrained: str = "nvidia/mit-b0"  # segformer_b0: pesos del codificador en Hugging Face ("" = aleatorios)
+    pretrained: object = True  # segformer_b0: true = codificador nvidia/mit-b0 (o nombre de repo HF); false = pesos aleatorios
     loss: str = "bce_dice"    # "bce_dice" (BCE + Dice) o "dice" (solo Dice suave)
     train_seed: int | None = None  # semilla del entrenamiento (pesos, lotes, aumento); None = ``seed``
     batch_size: int = 16

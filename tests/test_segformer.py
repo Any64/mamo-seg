@@ -38,6 +38,16 @@ def test_gradients_reach_encoder_and_decoder():
         assert all(p.grad is None or torch.isfinite(p.grad).all() for p in group)
 
 
+def test_pretrained_false_is_random_and_needs_no_download(monkeypatch):
+    # sin red: si intentara descargar, from_pretrained fallaría
+    monkeypatch.setenv("HF_HUB_OFFLINE", "1")
+    a = build_model(Config(arch="segformer_b0", pretrained=False))
+    torch.manual_seed(1)
+    b = build_model(Config(arch="segformer_b0", pretrained=False))
+    pa, pb = next(a.parameters()), next(b.parameters())
+    assert pa.shape == pb.shape and not torch.equal(pa, pb)   # pesos iniciales aleatorios
+
+
 def test_parameter_count_matches_mit_b0():
     n = sum(p.numel() for p in _model().parameters())
     assert 3.5e6 < n < 4.0e6     # SegFormer-B0 con cabeza de 1 clase: ~3.7 M

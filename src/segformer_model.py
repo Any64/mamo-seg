@@ -6,9 +6,11 @@ decodificador MLP liviano. Requiere el paquete opcional ``transformers``.
 - Entrada (B, 1, H, W) replicada a 3 canales.
 - La salida del decodificador (1 canal, H/4 × W/4) se escala a H × W con interpolación
   bilineal y se devuelven logits (B, 1, H, W), igual que la U-Net.
-- ``pretrained="nvidia/mit-b0"`` carga el codificador preentrenado en ImageNet-1k desde
-  Hugging Face (se descarga una vez a la caché de HF y no se versiona); el decodificador
-  siempre se inicializa al azar. ``pretrained=""`` usa pesos aleatorios (pruebas sin red).
+- ``pretrained=True`` (o el nombre de un repositorio, por defecto "nvidia/mit-b0") carga el
+  codificador preentrenado en ImageNet-1k desde Hugging Face (se descarga una vez a la caché
+  de HF y no se versiona); el decodificador siempre se inicializa al azar.
+- ``pretrained=False`` (o "") usa la misma arquitectura con pesos aleatorios: control sin
+  preentrenamiento (E13b) y pruebas sin red.
 """
 import torch.nn as nn
 import torch.nn.functional as F
@@ -26,8 +28,10 @@ def _import_transformers():
 
 
 class SegFormerBinary(nn.Module):
-    def __init__(self, pretrained: str = MIT_B0):
+    def __init__(self, pretrained=True):
         super().__init__()
+        if pretrained is True:
+            pretrained = MIT_B0
         SegformerConfig, SegformerForSemanticSegmentation = _import_transformers()
         if pretrained:
             self.net = SegformerForSemanticSegmentation.from_pretrained(

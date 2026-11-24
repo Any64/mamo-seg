@@ -17,7 +17,7 @@ preprocessing:
 
 model:
   arch: segformer_b0          # unet | morph_unet | segformer_b0
-  pretrained: nvidia/mit-b0   # se descarga una vez de Hugging Face (no se versiona)
+  pretrained: true            # true: codificador nvidia/mit-b0 de Hugging Face (se descarga una vez, no se versiona); false: aleatorio
   base_channels: 16           # no se usa en segformer_b0
   loss: bce_dice              # bce_dice (BCE + Dice) o dice (solo Dice)
 
