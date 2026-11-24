@@ -103,10 +103,10 @@ def predict_masks(model, X: np.ndarray, threshold: float = 0.5) -> np.ndarray:
 def load_unet(cfg: Config, ckpt_path):
     """U-Net con los pesos guardados en ``ckpt_path`` (en el dispositivo disponible)."""
     import torch
-    from .model import UNet
+    from .model import build_model
     from .train import get_device
     dev = get_device()
-    model = UNet(base=cfg.base_channels).to(dev)
+    model = build_model(cfg).to(dev)
     model.load_state_dict(torch.load(ckpt_path, map_location=dev))
     return model
 

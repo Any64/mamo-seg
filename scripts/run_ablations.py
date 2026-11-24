@@ -31,7 +31,7 @@ from src.pipeline import CLASSICAL, PRIOR, UNET, run_experiment  # noqa: E402
 from src.viz import plot_ablations                     # noqa: E402
 
 # parámetros que deben coincidir para reutilizar una ejecución existente
-MATCH_KEYS = ("img_size", "context", "jitter", "min_side", "val_frac", "seed", "base_channels", "loss",
+MATCH_KEYS = ("arch", "img_size", "context", "jitter", "min_side", "val_frac", "seed", "base_channels", "loss",
               "batch_size", "epochs", "lr", "weight_decay", "patience", "threshold", "amp")
 
 

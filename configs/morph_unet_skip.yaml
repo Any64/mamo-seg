@@ -1,0 +1,34 @@
+# Morph-UNet: U-Net de main.yaml + bloque morfológico aprendible (src/morph.py) en la conexión de salto de máxima resolución.
+# Todo lo demás es idéntico a main.yaml.
+
+name: morph_unet_skip
+
+data:
+  archive_dir: data/CBIS-DDSM # carpeta con csv/ y jpeg/ (ver docs/DATA.md)
+  out_dir: outputs            # caché de recortes, pesos y resultados (no versionado)
+  val_frac: 0.2               # fracción de PACIENTES del train oficial usada como validación
+
+preprocessing:
+  img_size: 256               # lado de los recortes ROI
+  context: 3.0                # lado del recorte = 3 x lado mayor de la caja de la lesión
+  jitter: 0.2                 # desplazamiento aleatorio del centro (±20 % del lado)
+  min_side: 96                # lado mínimo del recorte (px de la mamografía original)
+  workers: 8                  # procesos para generar los recortes (no cambia el resultado)
+
+model:
+  arch: morph_unet          # unet | morph_unet
+  morph_position: skip       # head | skip
+  morph_channels: 4           # pocos canales: cada p-convolución despliega k·k vecinos (memoria)
+  morph_kernel: 5             # elemento estructurante 5x5
+  base_channels: 16           # U-Net de 4 niveles, ~1.9 M parámetros
+  loss: bce_dice              # bce_dice (BCE + Dice) o dice (solo Dice)
+
+training:
+  seed: 42
+  epochs: 40
+  batch_size: 8
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 10                # early stopping sobre el Dice de validación
+  threshold: 0.5
+  amp: false                  # NO activar en GPUs GTX 16xx: fp16 produce pérdida NaN

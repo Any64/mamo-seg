@@ -11,7 +11,7 @@ import torch
 from .config import Config
 from .dataset import augment_batch, iterate_batches, to_tensors
 from .losses import get_loss
-from .model import UNet
+from .model import UNet, build_model
 
 
 def set_seed(seed: int) -> None:
@@ -26,8 +26,11 @@ def get_device() -> torch.device:
 
 
 @torch.no_grad()
-def predict_probs(model: UNet, x: torch.Tensor, batch_size: int = 32) -> np.ndarray:
-    """Probabilidades (N,H,W) para un tensor de entrada (N,1,H,W)."""
+def predict_probs(model: UNet, x: torch.Tensor, batch_size: int = 8) -> np.ndarray:
+    """Probabilidades (N,H,W) para un tensor de entrada (N,1,H,W).
+
+    Lotes de 8: con 32 la Morph-UNet roza los 4 GB de la GTX 1650 (no cambia el resultado).
+    """
     model.eval()
     dev = next(model.parameters()).device
     out = []
@@ -60,7 +63,7 @@ def train_unet(cfg: Config, Xtr, Ytr, Xva, Yva, verbose: bool = True,
     xva, yva = to_tensors(Xva, Yva, device)
     Yva_np = np.asarray(Yva)
 
-    model = UNet(base=cfg.base_channels).to(device)
+    model = build_model(cfg).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode="max", factor=0.5, patience=4)
     use_amp = bool(cfg.amp) and device.type == "cuda"

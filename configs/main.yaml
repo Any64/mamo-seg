@@ -18,6 +18,7 @@ preprocessing:
   workers: 8                  # procesos para generar los recortes (no cambia el resultado)
 
 model:
+  arch: unet                  # unet | morph_unet (ver configs/morph_unet.yaml)
   base_channels: 16           # U-Net de 4 niveles, ~1.9 M parámetros
   loss: bce_dice              # bce_dice (BCE + Dice) o dice (solo Dice)
 
