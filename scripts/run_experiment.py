@@ -31,13 +31,14 @@ def parse_args(argv=None):
     p.add_argument("--no-test", action="store_true",
                    help="no generar ni evaluar el test oficial (selección de modelo / ablaciones)")
     p.add_argument("--epochs", type=int, help="sobrescribe el número máximo de épocas")
+    p.add_argument("--lr", type=float, help="sobrescribe la tasa de aprendizaje (elección en validación)")
     p.add_argument("--no-figures", action="store_true", help="no generar figuras")
     return p.parse_args(argv)
 
 
 def main(argv=None) -> dict:
     a = parse_args(argv)
-    cfg = config_from_args(a, seed=a.seed, epochs=a.epochs, train_seed=a.train_seed)
+    cfg = config_from_args(a, seed=a.seed, epochs=a.epochs, train_seed=a.train_seed, lr=a.lr)
     print(f"Experimento '{cfg.name}' | dataset: {cfg.archive_dir} | salida: {cfg.run_dir}")
     return run_experiment(cfg, figures=not a.no_figures, evaluate_test=not a.no_test)
 
