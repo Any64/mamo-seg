@@ -73,3 +73,19 @@ configuración final (`configs/main.yaml`, sin cambios). Resumen e interpretaci�
 | `incertidumbre_test.csv` | E8 | Dice medio en test con IC 95 % bootstrap (1000) por recorte y por paciente |
 | `pruebas_test.json` | E8 | IC de la diferencia U-Net − clásico y Wilcoxon pareado sobre el Dice por recorte |
 | `figures/variabilidad_incertidumbre.png` | E6–E8 | IC en test, dispersión entre semillas y entre particiones |
+
+## Análisis sobre los modelos entrenados (sin reentrenar)
+
+Resumen e interpretación en `resumen_analisis.md`. Comandos: `scripts/stratified_analysis.py`,
+`scripts/margin_experiment.py`, `scripts/failure_analysis.py`; demostración en `notebooks/demo_resultados.ipynb`.
+
+| Archivo | Contenido |
+|---|---|
+| `estratificado_test.csv` | Dice/IoU/HD95 en test por forma, margen, sutileza, patología, densidad y vista (n por grupo; n < 15 marcado) |
+| `estratificado_kruskal.csv` | Kruskal-Wallis por variable y métrica con p ajustado por Holm |
+| `figures/estratificado_test.png` | Dice medio por subgrupo con n y HD95 mediano |
+| `margen_conteos.csv` | Conteos de `mass margins` y agrupación propuesta (M1, M2) |
+| `margen_experimento.csv` | AUC en val por opción y en test para la elegida: margen desde descriptores y patología desde margen/descriptores |
+| `figures/margen_roc.png` | Curvas ROC en test |
+| `fallos_test.csv`, `fallos_resumen.csv`, `fallos_pruebas.json` | Recortes con Dice < 0.1 por modo; relación con desplazamiento, tamaño y sutileza |
+| `figures/fallos_por_modo.png`, `figures/fallos_desplazamiento.png` | Ejemplos por modo y Dice vs desplazamiento |
