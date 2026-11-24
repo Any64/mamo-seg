@@ -96,6 +96,16 @@
   \label{fig:ablaciones}
 \end{figure}
 
+\subsection{Morfología en la red y posprocesamiento}
+% TODO: Morph-UNet (p-convolución, bloque en el salto) empata con la U-Net (test 0.762 ± 0.001); el posprocesamiento
+% fijo (r = 6, elegido en val) baja el HD95 medio de 25.6 a 18.3 px; Dice test 0.767 ± 0.007 (IC de la diferencia toca 0).
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{morfologia_comparacion.png}
+  \caption{U-Net, U-Net con posprocesamiento fijo y Morph-UNet (media ± DE de 3 semillas).}
+  \label{fig:morfologia}
+\end{figure}
+
 \subsection{Dónde falla la U-Net}
 \begin{figure}[ht]
   \centering

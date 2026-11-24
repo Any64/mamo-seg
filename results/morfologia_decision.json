@@ -1,0 +1,20 @@
+{
+  "radio_posprocesamiento": 6,
+  "criterio": "mayor Dice medio en validación (3 semillas)",
+  "dice_val": {
+    "U-Net": 0.777,
+    "U-Net + posproc. fijo": 0.7912,
+    "Morph-UNet": 0.7765
+  },
+  "modelo_final": "U-Net + posproc. fijo",
+  "unet_runs": [
+    "main",
+    "final_seed43",
+    "final_seed44"
+  ],
+  "morph_runs": [
+    "morph_unet_skip_s42",
+    "morph_unet_skip_s43",
+    "morph_unet_skip_s44"
+  ]
+}

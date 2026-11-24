@@ -1,0 +1,11 @@
+conjunto,máscara,frac_pred_ROUND,frac_pred_OVAL,frac_pred_LOBULATED,frac_pred_IRREGULAR,frac_pred_NONE
+val,máscara anotada,0.0679,0.2986,0.2941,0.3394,0.0
+val,máscara U-Net,0.1041,0.0588,0.7195,0.1131,0.0045
+val,máscara U-Net + posproc. fijo,0.1855,0.0136,0.7557,0.0317,0.0136
+val,máscara Morph-UNet,0.1312,0.0633,0.6335,0.1674,0.0045
+val,(etiqueta real),0.0679,0.2489,0.2805,0.4027,0.0
+test,máscara anotada,0.0463,0.2654,0.3549,0.3333,0.0
+test,máscara U-Net,0.0833,0.0432,0.7531,0.1111,0.0093
+test,máscara U-Net + posproc. fijo,0.142,0.0123,0.821,0.0062,0.0185
+test,máscara Morph-UNet,0.0988,0.0494,0.7253,0.1235,0.0031
+test,(etiqueta real),0.1265,0.2809,0.2438,0.3488,0.0

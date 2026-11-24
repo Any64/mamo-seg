@@ -149,7 +149,7 @@ Tiempos medidos en una GTX 1650 de 4 GB con los recortes en caché. Cada entrena
 | E9 | Análisis estratificado en test | `python scripts/stratified_analysis.py` | `results/estratificado_*` | < 1 min* |
 | E10 | Margen BI-RADS desde la geometría | `python scripts/margin_experiment.py` | `results/margen_*` | ~1 min |
 | E11 | Análisis de fallos (Dice < 0.1) | `python scripts/failure_analysis.py` | `results/fallos_*` | < 1 min* |
-| E12 | Morph-UNet y posprocesamiento fijo (**en curso**) | `python scripts/run_experiment.py --config configs/morph_unet.yaml --no-test --name morph_unet_s42` (y `morph_unet_skip.yaml`; semillas con `--train-seed`), luego `python scripts/compare_morphology.py ...` (ver su docstring) | `outputs/runs/morph_*`, `results/morfologia_*` | ~40 min por entrenamiento |
+| E12 | Morph-UNet y posprocesamiento fijo | `python scripts/run_experiment.py --config configs/morph_unet.yaml --no-test --name morph_unet_s42` (y `morph_unet_skip.yaml`; semillas con `--train-seed`), luego `python scripts/compare_morphology.py ...` (ver su docstring) | `outputs/runs/morph_*`, `results/morfologia_*` | ~35–40 min por entrenamiento (59 s/época), comparación ~5 min |
 
 \* E9 y E11 predicen una vez con los modelos de E1/E6 y guardan las máscaras en `outputs/runs/<run>/pred_masks.npz`.
 
@@ -222,6 +222,21 @@ entrenamiento (1061 masas).
 ≈ 0.78. Pero la geometría de las máscaras de CBIS-DDSM no la refleja: son contornos toscos, sin espículas e
 independientes de la forma anotada. El emparejamiento recorte ↔ máscara ↔ fila del CSV se verificó al 100 % (E4).
 
+### Morfología (E12; media ± DE de 3 semillas; detalle en `results/resumen_morfologia.md`)
+
+| Método | Dice val | Dice test | HD95 test (px, media) | > 1 componente (test) |
+|---|---|---|---|---|
+| U-Net | 0.777 ± 0.003 | 0.762 ± 0.009 | 25.6 ± 1.9 | 32 % |
+| **U-Net + posproc. fijo** (r = 6, elegido en val) | **0.791 ± 0.006** | **0.767 ± 0.007** | **18.3 ± 0.9** | 0 % |
+| Morph-UNet (bloque en el salto, +628 parámetros) | 0.777 ± 0.000 | 0.762 ± 0.001 | 26.6 ± 0.9 | 35 % |
+
+- **Morph-UNet:** la morfología aprendible dentro de la red no mejora; empata con la U-Net y tarda 3,7 veces más
+  por época.
+- **Posprocesamiento fijo:** baja el HD95 de forma significativa en val y en test. El Dice solo mejora en val (en test,
+  IC [−0.000, 0.009]). La ganancia viene casi toda de quedarse con la componente conexa mayor.
+- **Forma:** las máscaras de las redes se clasifican como LOBULATED en el 63–82 % de los casos, frente al 24 % de las
+  etiquetas reales.
+
 ## Limitaciones
 
 * CBIS-DDSM proviene de mamografías de película digitalizada (años 90), no de mamografía digital moderna (FFDM).
@@ -237,8 +252,7 @@ independientes de la forma anotada. El emparejamiento recorte ↔ máscara ↔ f
   ejemplo, densidad y sutileza). Por eso los p-valores son optimistas.
 * Los resultados en GPU varían ligeramente entre ejecuciones, porque cuDNN no es completamente determinista. Una
   nueva ejecución de E1 dio un Dice en test de 0.769, frente a 0.771 en la entrega parcial.
-* E12 (Morph-UNet y posprocesamiento morfológico fijo) está implementado y probado, pero sus resultados no estaban
-  disponibles al cerrar esta versión.
+* E12 compara la Morph-UNet con solo 3 semillas y 40 épocas; la semilla 43 alcanzó su mejor época en la última.
 
 ## Referencias
 

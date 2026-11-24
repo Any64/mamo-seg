@@ -20,7 +20,7 @@ Para regenerarlos (ver README principal):
 | **E9** Análisis estratificado en test (no entrena) | `python scripts/stratified_analysis.py` | `results/estratificado_*` | < 1 min |
 | **E10** Margen BI-RADS desde la geometría (no usa la U-Net) | `python scripts/margin_experiment.py` | `results/margen_*` | ~1 min |
 | **E11** Análisis de fallos (no entrena) | `python scripts/failure_analysis.py` | `results/fallos_*` | < 1 min |
-| **E12** Morph-UNet y posprocesamiento fijo (**en curso**; resultados no incluidos en esta versión) | `configs/morph_unet*.yaml` con `run_experiment.py --no-test`, luego `python scripts/compare_morphology.py` | `outputs/runs/morph_*`, `results/morfologia_*` | ~40 min por entrenamiento |
+| **E12** Morph-UNet y posprocesamiento fijo | `configs/morph_unet*.yaml` con `run_experiment.py --no-test`, luego `python scripts/compare_morphology.py` | `outputs/runs/morph_*`, `results/morfologia_*`, `posproc_seleccion_radio.csv` | ~35–40 min por entrenamiento, comparación ~5 min |
 
 **Cifra de referencia** (configuración final, media ± DE de 3 semillas): Dice de la U-Net 0.777 ± 0.003 en
 validación y **0.762 ± 0.009 en test**; validación cruzada por paciente 0.771 ± 0.014 (ver `variabilidad_semillas.csv`
@@ -98,3 +98,23 @@ Resumen e interpretación en `resumen_analisis.md`. Comandos: `scripts/stratifie
 | `figures/margen_roc.png` | Curvas ROC en test |
 | `fallos_test.csv`, `fallos_resumen.csv`, `fallos_pruebas.json` | Recortes con Dice < 0.1 por modo; relación con desplazamiento, tamaño y sutileza |
 | `figures/fallos_por_modo.png`, `figures/fallos_desplazamiento.png` | Ejemplos por modo y Dice vs desplazamiento |
+
+## Morfología (E12)
+
+Resumen e interpretación en `resumen_morfologia.md`. Comando:
+`python scripts/compare_morphology.py --unet-runs main final_seed43 final_seed44 --morph-runs morph_unet_skip_s42 morph_unet_skip_s43 morph_unet_skip_s44 --position-runs morph_unet_s42 morph_unet_skip_s42`
+(no entrena; las Morph-UNet se entrenan antes con `run_experiment.py --config configs/morph_unet_skip.yaml --no-test --train-seed S`).
+
+| Archivo | Contenido |
+|---|---|
+| `morfologia_ubicacion.csv` | Ubicación del bloque (`head` o `skip`) en validación, semilla 42; incluye los segundos por época |
+| `posproc_seleccion_radio.csv` | Dice de validación por radio del posprocesamiento (3 semillas de la U-Net) |
+| `morfologia_comparacion.csv`, `morfologia_por_semilla.csv` | Dice, IoU, precisión, sensibilidad, HD95, componentes y predicciones vacías de los 3 métodos (media ± DE y por semilla) |
+| `morfologia_pruebas.csv` | Diferencias pareadas: IC bootstrap por recorte y por paciente, y Wilcoxon |
+| `morfologia_decision.json` | Radio y modelo final elegidos en validación |
+| `morfologia_p_aprendidos.csv` | p y peso mínimo relativo del elemento estructurante, por capa, canal y semilla |
+| `morfologia_ejemplos.csv` | Los 8 recortes de validación donde más cambia la predicción |
+| `morfologia_forma.csv`, `morfologia_forma_distribucion.csv` | Forma BI-RADS (árbol de E1) con la máscara de cada método |
+| `figures/morfologia_elementos_p.png` | Elementos estructurantes y p aprendidos |
+| `figures/morfologia_ejemplos.png` | Ejemplos: anotación, U-Net, Morph-UNet y posprocesamiento |
+| `figures/morfologia_comparacion.png` | Dice, HD95 y fracción con > 1 componente por método |
