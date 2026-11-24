@@ -106,6 +106,17 @@
   \label{fig:morfologia}
 \end{figure}
 
+\subsection{Otra familia de modelos: SegFormer-B0}
+% TODO: SegFormer-B0 \citep{xie2021segformer} (codificador MiT-b0 preentrenado en ImageNet, 3.7 M parámetros, lr 3e-4
+% elegido en val): Dice test 0.792 ± 0.003 frente a 0.762 ± 0.009 (+0.030 [0.019, 0.041]); la mejora viene de la
+% sensibilidad y de no dejar predicciones vacías; los fallos en otra zona no bajan (McNemar p = 0.48 en test).
+egin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{segformer_comparacion.png}
+  \caption{U-Net frente a SegFormer-B0, con y sin posprocesamiento fijo (media ± DE de 3 semillas).}
+  \label{fig:segformer}
+\end{figure}
+
 \subsection{Dónde falla la U-Net}
 \begin{figure}[ht]
   \centering

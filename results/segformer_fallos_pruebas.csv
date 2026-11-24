@@ -1,0 +1,33 @@
+conjunto,comparación,tipo,solo_falla_a,solo_falla_b,mcnemar_exacto_p
+val,SegFormer-B0 vs U-Net,fallos,8,13,0.38331031799316406
+val,SegFormer-B0 vs U-Net,predicción vacía,0,9,0.00390625
+val,SegFormer-B0 vs U-Net,otra zona sin solape,12,2,0.012939453125
+val,SegFormer-B0 vs U-Net,sub/sobresegmentación,2,8,0.109375
+test,SegFormer-B0 vs U-Net,fallos,14,24,0.14330665429588407
+test,SegFormer-B0 vs U-Net,predicción vacía,0,7,0.015625
+test,SegFormer-B0 vs U-Net,otra zona sin solape,7,11,0.480682373046875
+test,SegFormer-B0 vs U-Net,sub/sobresegmentación,15,14,1.0
+val,SegFormer-B0 vs U-Net + posproc.,fallos,4,19,0.002599477767944336
+val,SegFormer-B0 vs U-Net + posproc.,predicción vacía,0,13,0.000244140625
+val,SegFormer-B0 vs U-Net + posproc.,otra zona sin solape,3,7,0.34375
+val,SegFormer-B0 vs U-Net + posproc.,sub/sobresegmentación,2,0,0.5
+test,SegFormer-B0 vs U-Net + posproc.,fallos,10,44,3.3856859533720747e-06
+test,SegFormer-B0 vs U-Net + posproc.,predicción vacía,0,22,4.76837158203125e-07
+test,SegFormer-B0 vs U-Net + posproc.,otra zona sin solape,6,24,0.0014309063553810122
+test,SegFormer-B0 vs U-Net + posproc.,sub/sobresegmentación,17,11,0.34492845088243484
+val,SegFormer-B0 + posproc. vs U-Net + posproc.,fallos,7,18,0.043285250663757324
+val,SegFormer-B0 + posproc. vs U-Net + posproc.,predicción vacía,0,13,0.000244140625
+val,SegFormer-B0 + posproc. vs U-Net + posproc.,otra zona sin solape,7,6,1.0
+val,SegFormer-B0 + posproc. vs U-Net + posproc.,sub/sobresegmentación,1,0,1.0
+test,SegFormer-B0 + posproc. vs U-Net + posproc.,fallos,10,39,3.845911694355664e-05
+test,SegFormer-B0 + posproc. vs U-Net + posproc.,predicción vacía,0,22,4.76837158203125e-07
+test,SegFormer-B0 + posproc. vs U-Net + posproc.,otra zona sin solape,10,19,0.13604594767093658
+test,SegFormer-B0 + posproc. vs U-Net + posproc.,sub/sobresegmentación,12,10,0.8318119049072266
+val,SegFormer-B0 + posproc. vs SegFormer-B0,fallos,4,0,0.125
+val,SegFormer-B0 + posproc. vs SegFormer-B0,predicción vacía,0,0,
+val,SegFormer-B0 + posproc. vs SegFormer-B0,otra zona sin solape,5,0,0.0625
+val,SegFormer-B0 + posproc. vs SegFormer-B0,sub/sobresegmentación,0,1,1.0
+test,SegFormer-B0 + posproc. vs SegFormer-B0,fallos,5,0,0.0625
+test,SegFormer-B0 + posproc. vs SegFormer-B0,predicción vacía,0,0,
+test,SegFormer-B0 + posproc. vs SegFormer-B0,otra zona sin solape,9,0,0.00390625
+test,SegFormer-B0 + posproc. vs SegFormer-B0,sub/sobresegmentación,1,5,0.21875

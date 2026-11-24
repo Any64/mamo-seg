@@ -21,6 +21,7 @@ Para regenerarlos (ver README principal):
 | **E10** Margen BI-RADS desde la geometría (no usa la U-Net) | `python scripts/margin_experiment.py` | `results/margen_*` | ~1 min |
 | **E11** Análisis de fallos (no entrena) | `python scripts/failure_analysis.py` | `results/fallos_*` | < 1 min |
 | **E12** Morph-UNet y posprocesamiento fijo | `configs/morph_unet*.yaml` con `run_experiment.py --no-test`, luego `python scripts/compare_morphology.py` | `outputs/runs/morph_*`, `results/morfologia_*`, `posproc_seleccion_radio.csv` | ~35–40 min por entrenamiento, comparación ~5 min |
+| **E13** SegFormer-B0 frente a la U-Net | `configs/segformer_b0.yaml` con `run_experiment.py --no-test --lr ...`, luego `python scripts/compare_segformer.py` | `outputs/runs/segformer_*`, `results/segformer_*` | ~11–19 min por entrenamiento, comparación ~5 min |
 
 **Cifra de referencia** (configuración final, media ± DE de 3 semillas): Dice de la U-Net 0.777 ± 0.003 en
 validación y **0.762 ± 0.009 en test**; validación cruzada por paciente 0.771 ± 0.014 (ver `variabilidad_semillas.csv`
@@ -121,3 +122,20 @@ Resumen e interpretación en `resumen_morfologia.md`. Comando:
 | `posproc_sensibilidad.csv` | Análisis posterior (no usado para elegir): Dice, HD95 mediano, vacías y Dice < 0.1 por radio, conjunto y semilla (`scripts/posproc_sensitivity.py`) |
 | `posproc_caidas.csv`, `posproc_caidas_resumen.csv` | Recortes que el posprocesamiento (r = 6) lleva a Dice < 0.1, por causa |
 | `figures/posproc_caidas_ejemplos.png` | Ejemplos de esas caídas por causa |
+
+## SegFormer-B0 (E13)
+
+Resumen e interpretación en `resumen_segformer.md`. Comando:
+`python scripts/compare_segformer.py --unet-runs main final_seed43 final_seed44 --segformer-runs segformer_lr3e-4 segformer_s43 segformer_s44 --lr-runs segformer_lr1e-4 segformer_lr3e-4`
+(no entrena; el posprocesamiento usa el r = 6 de E12; el test solo se informa).
+
+| Archivo | Contenido |
+|---|---|
+| `segformer_eleccion_lr.csv` | Dice de validación con lr 1e-4 y 3e-4 (semilla 42), épocas y segundos por época |
+| `segformer_comparacion.csv`, `segformer_por_semilla.csv` | Dice, IoU, precisión, sensibilidad, HD95 medio y mediano, componentes, vacías y Dice < 0.1 de U-Net, U-Net + posproc., SegFormer y SegFormer + posproc. (media ± DE y por semilla) |
+| `segformer_pruebas.csv` | Diferencias pareadas de Dice y HD95: IC bootstrap por paciente y por recorte, y Wilcoxon |
+| `segformer_fallos.csv`, `segformer_fallos_por_semilla.csv` | Fallos (Dice < 0.1) por modo (criterio de E11), por método y semilla |
+| `segformer_fallos_pruebas.csv` | McNemar exacto por modo de fallo, pareando semilla con semilla |
+| `segformer_forma.csv`, `segformer_forma_distribucion.csv` | Forma BI-RADS (árbol de E1) con la máscara de cada método |
+| `segformer_ejemplos.csv`, `figures/segformer_ejemplos.png` | Los 8 recortes de test donde SegFormer más difiere de la U-Net (semilla 42) |
+| `figures/segformer_comparacion.png` | Dice, HD95 mediano y recortes con Dice < 0.1 por método |

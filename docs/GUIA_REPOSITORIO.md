@@ -21,6 +21,7 @@ versiona. `results/` guarda solo las tablas y figuras finales.
 | `main.yaml` | Configuración final: img 256, context 3, jitter 0.2, U-Net base 16, BCE+Dice, 40 épocas, batch 8, `amp: false` |
 | `quick.yaml` | Igual que `main` con 3 épocas (demo y verificación rápida) |
 | `ablations.yaml` | Variantes de E5 (context, jitter, canales base, pérdida) sobre `main.yaml` |
+| `segformer_b0.yaml` | E13: SegFormer-B0 (codificador `nvidia/mit-b0` preentrenado), lr 3e-4; el resto igual a `main.yaml` |
 | `morph_unet.yaml`, `morph_unet_skip.yaml` | E12: `main.yaml` + bloque morfológico antes de la cabeza 1x1 o en el salto de máxima resolución |
 
 Los YAML se agrupan por secciones (`data`, `preprocessing`, `model`, `training`), que `load_config` aplana; toda
@@ -36,6 +37,7 @@ clave tiene que ser un campo de `src/config.py:Config`.
 | `data_utils.py` | División por paciente (`patient_split`) y normalización |
 | `dataset.py` | Tensores, lotes y aumento de datos en GPU |
 | `model.py` | `UNet`, `MorphUNet` y `build_model(cfg)` (según `cfg.arch`) |
+| `segformer_model.py` | `SegFormerBinary`: SegFormer-B0 de `transformers` (opcional), 1 canal replicado a 3, salida escalada a 256 × 256 |
 | `morph.py` | `PConv2d` (p-convolución estable vía softmax) y `MorphBlock` (apertura/cierre + residual) |
 | `losses.py` | BCE + Dice y solo Dice (`get_loss`) |
 | `train.py` | `train_unet`: AdamW, ReduceLROnPlateau, early stopping por Dice de validación |
@@ -52,7 +54,7 @@ clave tiene que ser un campo de `src/config.py:Config`.
 | Script | Experimento | Entrena |
 |---|---|---|
 | `download_data.py` | Descarga o verifica el dataset (`--check-only`) | — |
-| `run_experiment.py` | E1, E6 (`--train-seed`), E12 (configs morph) | sí |
+| `run_experiment.py` | E1, E6 (`--train-seed`), E12 (configs morph), E13 (`segformer_b0.yaml`, `--lr`) | sí |
 | `shape_ablation.py`, `shape_control.py`, `shape_diagnostics.py` | E2, E3, E4 | no |
 | `run_ablations.py` | E5 (reanudable; reutiliza `main` como referencia) | sí |
 | `cross_validate.py` | E7 (GroupKFold por paciente; reanudable por partición) | sí |
@@ -60,6 +62,8 @@ clave tiene que ser un campo de `src/config.py:Config`.
 | `stratified_analysis.py` | E9 (subgrupos de test, Kruskal-Wallis + Holm) | no |
 | `margin_experiment.py` | E10 (margen desde la geometría; reutiliza `run_task` de `shape_control.py`) | no |
 | `failure_analysis.py` | E11 (modos de fallo y desplazamiento) | no |
+| `compare_segformer.py` | E13 (elección del lr, comparación, modos de fallo con McNemar, forma) | no |
+| `posproc_sensitivity.py` | Sensibilidad del posprocesamiento al radio y causas de las caídas (análisis posterior) | no |
 | `compare_morphology.py` | E12 (ubicación del bloque, radio del posprocesamiento elegido en validación, comparación) | no |
 
 ## Notebooks (`notebooks/`)
@@ -78,6 +82,7 @@ Los notebooks se versionan sin salidas; para cambiarlos se edita el `build_*.py`
 | `make_synthetic_archive.py` | Crea un dataset sintético con la estructura de Kaggle (no es una prueba) |
 | `test_pipeline.py` | Rutas, alineación, referencias, forma, entrenamiento corto |
 | `test_scripts.py` | Config, `run_experiment.py` de punta a punta, modo sin test, errores claros, descarga sin red, preprocesamiento paralelo idéntico, pérdidas, CV por paciente, bootstrap y Wilcoxon |
+| `test_segformer.py` | SegFormer-B0 con pesos aleatorios (sin descarga): forma, NaN, gradientes, parámetros; se omite sin `transformers` |
 | `test_morph.py` | p-convolución frente a `scipy.ndimage.grey_dilation/erosion`, gradientes, NaN, formas, `build_model` |
 | `test_metrics_post.py` | Hausdorff 95, componentes conexas, posprocesamiento fijo |
 | `test_demo.py` | Estructura del notebook de demostración y que esté al día con `build_demo.py` |
@@ -86,7 +91,7 @@ Los notebooks se versionan sin salidas; para cambiarlos se edita el `build_*.py`
 
 | Ruta | Contenido |
 |---|---|
-| `results/` | Tablas y figuras finales; `README.md` describe cada archivo; `resumen_fase1.md`, `resumen_analisis.md` y `resumen_morfologia.md` son los resúmenes con interpretación |
+| `results/` | Tablas y figuras finales; `README.md` describe cada archivo; `resumen_fase1.md`, `resumen_analisis.md`, `resumen_morfologia.md` y `resumen_segformer.md` son los resúmenes con interpretación |
 | `report/` | Esqueleto LaTeX del informe (`main.tex`, `refs.bib`) y copia de las figuras finales en `figures/` |
 | `docs/DATA.md` | Origen, estructura y particularidades del dataset |
 | `outputs/` (no versionado) | `processed/` (recortes), `runs/<name>/` (cada ejecución), `logs/`, zips de entrega |

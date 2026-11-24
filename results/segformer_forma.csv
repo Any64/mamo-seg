@@ -1,0 +1,11 @@
+conjunto,máscara,n,sin_descriptores,exactitud,exactitud_balanceada,f1_macro
+val,máscara anotada,221,0,0.3258,0.303,0.2998
+val,máscara U-Net,221,1,0.3122,0.3028,0.2419
+val,máscara U-Net + posproc.,221,3,0.2489,0.256,0.1494
+val,máscara SegFormer-B0,221,0,0.2851,0.2897,0.2151
+val,máscara SegFormer-B0 + posproc.,221,0,0.2308,0.2698,0.1518
+test,máscara anotada,324,0,0.2438,0.2196,0.2151
+test,máscara U-Net,324,3,0.2438,0.2607,0.1888
+test,máscara U-Net + posproc.,324,6,0.2407,0.284,0.1718
+test,máscara SegFormer-B0,324,0,0.2562,0.2959,0.2193
+test,máscara SegFormer-B0 + posproc.,324,0,0.2469,0.3138,0.1862

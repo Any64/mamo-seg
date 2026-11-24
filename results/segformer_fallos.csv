@@ -1,0 +1,9 @@
+método,conjunto,fallos_media,predicción vacía_media,otra zona sin solape_media,sub/sobresegmentación_media,fallos_de,predicción vacía_de,otra zona sin solape_de,sub/sobresegmentación_de
+U-Net,val,6.667,3.0,1.0,2.667,1.155,0.0,1.0,0.577
+U-Net + posproc.,val,10.0,4.333,5.667,0.0,2.646,0.577,2.309,0.0
+SegFormer-B0,val,5.0,0.0,4.333,0.667,0.0,0.0,1.155,1.155
+SegFormer-B0 + posproc.,val,6.333,0.0,6.0,0.333,1.528,0.0,1.732,0.577
+U-Net,test,13.333,2.333,5.333,5.667,3.055,0.577,1.528,2.309
+U-Net + posproc.,test,21.333,7.333,10.0,4.0,3.055,3.512,1.732,1.0
+SegFormer-B0,test,10.0,0.0,4.0,6.0,3.0,0.0,1.732,1.732
+SegFormer-B0 + posproc.,test,11.667,0.0,7.0,4.667,3.215,0.0,3.464,0.577

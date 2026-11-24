@@ -1,0 +1,25 @@
+método,semilla,conjunto,fallos,predicción vacía,otra zona sin solape,sub/sobresegmentación
+SegFormer-B0,42,test,10,0,5,5
+SegFormer-B0,42,val,5,0,5,0
+SegFormer-B0,43,test,13,0,5,8
+SegFormer-B0,43,val,5,0,5,0
+SegFormer-B0,44,test,7,0,2,5
+SegFormer-B0,44,val,5,0,3,2
+SegFormer-B0 + posproc.,42,test,13,0,9,4
+SegFormer-B0 + posproc.,42,val,5,0,5,0
+SegFormer-B0 + posproc.,43,test,14,0,9,5
+SegFormer-B0 + posproc.,43,val,8,0,8,0
+SegFormer-B0 + posproc.,44,test,8,0,3,5
+SegFormer-B0 + posproc.,44,val,6,0,5,1
+U-Net,42,test,16,2,7,7
+U-Net,42,val,6,3,1,2
+U-Net,43,test,14,2,5,7
+U-Net,43,val,6,3,0,3
+U-Net,44,test,10,3,4,3
+U-Net,44,val,8,3,2,3
+U-Net + posproc.,42,test,24,11,9,4
+U-Net + posproc.,42,val,12,5,7,0
+U-Net + posproc.,43,test,22,7,12,3
+U-Net + posproc.,43,val,7,4,3,0
+U-Net + posproc.,44,test,18,4,9,5
+U-Net + posproc.,44,val,11,4,7,0

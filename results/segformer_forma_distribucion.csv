@@ -1,0 +1,13 @@
+conjunto,máscara,frac_pred_ROUND,frac_pred_OVAL,frac_pred_LOBULATED,frac_pred_IRREGULAR,frac_pred_NONE
+val,máscara anotada,0.0679,0.2986,0.2941,0.3394,0.0
+val,máscara U-Net,0.1041,0.0588,0.7195,0.1131,0.0045
+val,máscara U-Net + posproc.,0.1855,0.0136,0.7557,0.0317,0.0136
+val,máscara SegFormer-B0,0.1538,0.0271,0.7059,0.1131,0.0
+val,máscara SegFormer-B0 + posproc.,0.267,0.009,0.7104,0.0136,0.0
+val,(etiqueta real),0.0679,0.2489,0.2805,0.4027,0.0
+test,máscara anotada,0.0463,0.2654,0.3549,0.3333,0.0
+test,máscara U-Net,0.0833,0.0432,0.7531,0.1111,0.0093
+test,máscara U-Net + posproc.,0.142,0.0123,0.821,0.0062,0.0185
+test,máscara SegFormer-B0,0.1605,0.037,0.7006,0.1019,0.0
+test,máscara SegFormer-B0 + posproc.,0.2222,0.0031,0.7623,0.0123,0.0
+test,(etiqueta real),0.1265,0.2809,0.2438,0.3488,0.0

@@ -154,6 +154,7 @@ Tiempos medidos en una GTX 1650 de 4 GB con los recortes en caché. Cada entrena
 | E10 | Margen BI-RADS desde la geometría | `python scripts/margin_experiment.py` | `results/margen_*` | ~1 min |
 | E11 | Análisis de fallos (Dice < 0.1) | `python scripts/failure_analysis.py` | `results/fallos_*` | < 1 min* |
 | E12 | Morph-UNet y posprocesamiento fijo | `python scripts/run_experiment.py --config configs/morph_unet.yaml --no-test --name morph_unet_s42` (y `morph_unet_skip.yaml`; semillas con `--train-seed`), luego `python scripts/compare_morphology.py ...` (ver su docstring) | `outputs/runs/morph_*`, `results/morfologia_*` | ~35–40 min por entrenamiento (59 s/época), comparación ~5 min |
+| E13 | SegFormer-B0 (transformer, codificador preentrenado; requiere `transformers`) | `python scripts/run_experiment.py --config configs/segformer_b0.yaml --no-test --lr 1e-4 --name segformer_lr1e-4` (ídem 3e-4; semillas 43/44 con `--train-seed`), luego `python scripts/compare_segformer.py ...` (ver su docstring) | `outputs/runs/segformer_*`, `results/segformer_*` | ~11–19 min por entrenamiento (29–34 s/época), comparación ~5 min |
 
 \* E9 y E11 predicen una vez con los modelos de E1/E6 y guardan las máscaras en `outputs/runs/<run>/pred_masks.npz`.
 
@@ -168,8 +169,8 @@ python -m pytest -q tests
 
 Generan un dataset sintético con la misma estructura que el de Kaggle y verifican el pipeline completo (rutas,
 alineación, referencias, forma, entrenamiento, `run_experiment.py` de punta a punta, validación cruzada por
-paciente, estadística, capas morfológicas frente a scipy, Hausdorff 95, posprocesamiento, notebook de demostración y
-`download_data.py` sin red). 42 pruebas, ~1 min.
+paciente, estadística, capas morfológicas frente a scipy, SegFormer-B0 sin descarga, Hausdorff 95, posprocesamiento, notebook de demostración y
+`download_data.py` sin red). 46 pruebas (3 se omiten sin `transformers`), ~1 min.
 
 ## Resultados
 
@@ -241,6 +242,22 @@ independientes de la forma anotada. El emparejamiento recorte ↔ máscara ↔ f
 - **Forma:** las máscaras de las redes se clasifican como LOBULATED en el 63–82 % de los casos, frente al 24 % de las
   etiquetas reales.
 
+### SegFormer-B0 (E13; media ± DE de 3 semillas; detalle en `results/resumen_segformer.md`)
+
+| Método | Dice val | Dice test | HD95 test (px, mediana) | Vacías (test) | Dice < 0.1 (test) |
+|---|---|---|---|---|---|
+| U-Net | 0.777 ± 0.003 | 0.762 ± 0.009 | 15.4 | 2.3 | 13.3 |
+| **SegFormer-B0** (3.7 M parámetros, lr 3e-4 elegido en val) | **0.810 ± 0.001** | **0.792 ± 0.003** | **12.8** | 0 | 10.0 |
+| SegFormer-B0 + posproc. fijo (r = 6) | 0.810 ± 0.003 | 0.793 ± 0.003 | 12.8 | 0 | 11.7 |
+
+- **Mejora:** SegFormer − U-Net en test: Dice +0.030 [IC 95 % por paciente 0.019, 0.041], Wilcoxon p < 1e-4. Viene de
+  la sensibilidad (0.87 frente a 0.80) y de no dejar predicciones vacías.
+- **La hipótesis de localización no se confirma:** los fallos en "otra zona" no bajan de forma significativa en test
+  (5.3 frente a 4.0 por semilla, McNemar p = 0.48) y en validación suben (1.0 frente a 4.3).
+- **Cautela:** el codificador está preentrenado en ImageNet y la U-Net no, así que la mejora no se atribuye solo a la
+  atención global.
+- **Forma BI-RADS:** no cambia.
+
 ## Limitaciones
 
 * CBIS-DDSM proviene de mamografías de película digitalizada (años 90), no de mamografía digital moderna (FFDM).
@@ -256,6 +273,8 @@ independientes de la forma anotada. El emparejamiento recorte ↔ máscara ↔ f
   ejemplo, densidad y sutileza). Por eso los p-valores son optimistas.
 * Los resultados en GPU varían ligeramente entre ejecuciones, porque cuDNN no es completamente determinista. Una
   nueva ejecución de E1 dio un Dice en test de 0.769, frente a 0.771 en la entrega parcial.
+* E13 compara una red preentrenada (SegFormer-B0, ImageNet) con una U-Net entrenada desde cero, con distinto número
+  de parámetros; el lr solo se ajustó para SegFormer (2 valores).
 * E12 compara la Morph-UNet con solo 3 semillas y 40 épocas; la semilla 43 alcanzó su mejor época en la última.
 
 ## Referencias
