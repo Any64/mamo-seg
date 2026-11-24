@@ -8,6 +8,15 @@
   doi     = {10.1038/sdata.2017.177}
 }
 
+@incollection{heath2001ddsm,
+  author    = {Heath, Michael and Bowyer, Kevin and Kopans, Daniel and Moore, Richard and Kegelmeyer, W. Philip},
+  title     = {The Digital Database for Screening Mammography},
+  booktitle = {Digital Mammography: IWDM 2000},
+  publisher = {Medical Physics Publishing},
+  year      = {2001},
+  pages     = {212--218}
+}
+
 @inproceedings{ronneberger2015unet,
   author    = {Ronneberger, Olaf and Fischer, Philipp and Brox, Thomas},
   title     = {{U-Net}: Convolutional Networks for Biomedical Image Segmentation},
@@ -16,7 +25,8 @@
   volume    = {9351},
   pages     = {234--241},
   year      = {2015},
-  doi       = {10.1007/978-3-319-24574-4_28}
+  doi       = {10.1007/978-3-319-24574-4_28},
+  note      = {arXiv:1505.04597}
 }
 
 @article{otsu1979,
@@ -33,7 +43,7 @@
 @inproceedings{masci2013morph,
   author    = {Masci, Jonathan and Angulo, Jes{\'u}s and Schmidhuber, J{\"u}rgen},
   title     = {A learning framework for morphological operators using counter-harmonic mean},
-  booktitle = {Mathematical Morphology and Its Applications to Signal and Image Processing (ISMM)},
+  booktitle = {Mathematical Morphology and Its Applications to Signal and Image Processing (ISMM 2013)},
   series    = {LNCS},
   volume    = {7883},
   pages     = {329--340},
@@ -41,11 +51,19 @@
   doi       = {10.1007/978-3-642-38294-9_28}
 }
 
-@book{acr2025birads,
-  author    = {{American College of Radiology}},
-  title     = {{ACR BI-RADS} Atlas, v2025},
-  publisher = {American College of Radiology},
-  year      = {2025}
+@inproceedings{kirszenberg2021pconv,
+  author    = {Kirszenberg, Alexandre and Tochon, Guillaume and Puybareau, {\'E}lodie and Angulo, Jes{\'u}s},
+  title     = {Going beyond p-convolutions to learn grayscale morphological operators},
+  booktitle = {Discrete Geometry and Mathematical Morphology (DGMM 2021)},
+  year      = {2021},
+  note      = {arXiv:2102.10038}
+}
+
+@misc{acr2025birads,
+  author = {{American College of Radiology}},
+  title  = {{ACR BI-RADS} Atlas, v2025},
+  year   = {2025},
+  note   = {Documento ``What's New'' de BI-RADS v2025}
 }
 
 @inproceedings{xie2021segformer,
@@ -55,4 +73,75 @@
   volume    = {34},
   pages     = {12077--12090},
   year      = {2021}
+}
+
+@article{abdelhafiz2020,
+  author  = {Abdelhafiz, Dina and Bi, Jinbo and Ammar, Reda and Yang, Clifford and Nabavi, Sheida},
+  title   = {Convolutional neural network for automated mass segmentation in mammography},
+  journal = {BMC Bioinformatics},
+  volume  = {21},
+  pages   = {192},
+  year    = {2020},
+  doi     = {10.1186/s12859-020-3521-y}
+}
+
+@article{baccouche2021connected,
+  author  = {Baccouche, Asma and Garcia-Zapirain, Begonya and Castillo Olea, Cristian and Elmaghraby, Adel S.},
+  title   = {{Connected-UNets}: a deep learning architecture for breast mass segmentation},
+  journal = {npj Breast Cancer},
+  volume  = {7},
+  pages   = {151},
+  year    = {2021},
+  doi     = {10.1038/s41523-021-00358-x}
+}
+
+@inproceedings{milletari2016vnet,
+  author    = {Milletari, Fausto and Navab, Nassir and Ahmadi, Seyed-Ahmad},
+  title     = {{V-Net}: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation},
+  booktitle = {Fourth International Conference on 3D Vision (3DV)},
+  pages     = {565--571},
+  year      = {2016}
+}
+
+@inproceedings{loshchilov2019adamw,
+  author    = {Loshchilov, Ilya and Hutter, Frank},
+  title     = {Decoupled Weight Decay Regularization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2019}
+}
+
+@inproceedings{paszke2019pytorch,
+  author    = {Paszke, Adam and Gross, Sam and Massa, Francisco and others},
+  title     = {{PyTorch}: An Imperative Style, High-Performance Deep Learning Library},
+  booktitle = {Advances in Neural Information Processing Systems 32},
+  pages     = {8024--8035},
+  year      = {2019}
+}
+
+@article{pedregosa2011sklearn,
+  author  = {Pedregosa, Fabian and Varoquaux, Ga{\"e}l and Gramfort, Alexandre and others},
+  title   = {Scikit-learn: Machine Learning in {Python}},
+  journal = {Journal of Machine Learning Research},
+  volume  = {12},
+  pages   = {2825--2830},
+  year    = {2011}
+}
+
+@article{vanderwalt2014skimage,
+  author  = {van der Walt, St{\'e}fan and Sch{\"o}nberger, Johannes L. and Nunez-Iglesias, Juan and Boulogne, Fran{\c{c}}ois and Warner, Joshua D. and Yager, Neil and Gouillart, Emmanuelle and Yu, Tony},
+  title   = {scikit-image: image processing in {Python}},
+  journal = {PeerJ},
+  volume  = {2},
+  pages   = {e453},
+  year    = {2014}
+}
+
+@article{nguyen2023vindr,
+  author    = {Nguyen, Hieu T. and Nguyen, Ha Q. and Pham, Hieu H. and others},
+  title     = {{VinDr-Mammo}: A large-scale benchmark dataset for computer-aided diagnosis in full-field digital mammography},
+  journal   = {Scientific Data},
+  year      = {2023},
+  volume    = {10},
+  pages     = {277},
+  doi       = {10.1038/s41597-023-02100-7}
 }
