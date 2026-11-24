@@ -118,3 +118,6 @@ Resumen e interpretación en `resumen_morfologia.md`. Comando:
 | `figures/morfologia_elementos_p.png` | Elementos estructurantes y p aprendidos |
 | `figures/morfologia_ejemplos.png` | Ejemplos: anotación, U-Net, Morph-UNet y posprocesamiento |
 | `figures/morfologia_comparacion.png` | Dice, HD95 y fracción con > 1 componente por método |
+| `posproc_sensibilidad.csv` | Análisis posterior (no usado para elegir): Dice, HD95 mediano, vacías y Dice < 0.1 por radio, conjunto y semilla (`scripts/posproc_sensitivity.py`) |
+| `posproc_caidas.csv`, `posproc_caidas_resumen.csv` | Recortes que el posprocesamiento (r = 6) lleva a Dice < 0.1, por causa |
+| `figures/posproc_caidas_ejemplos.png` | Ejemplos de esas caídas por causa |

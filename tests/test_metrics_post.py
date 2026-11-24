@@ -66,3 +66,13 @@ def test_postprocess_closing_fills_small_hole_and_border_safe():
     assert out[20, 20] and out[0, 0]   # agujero cerrado; el borde del recorte no se erosiona
     # la apertura solo redondea la esquina convexa interior (39, 39): pocos píxeles
     assert (out ^ ndi.binary_fill_holes(m)).sum() <= 6
+
+
+def test_drop_cause():
+    from src.postprocess import CAUSE_COMPONENT, CAUSE_EMPTY, CAUSE_OTHER, drop_cause
+    assert drop_cause(0.05, 0.0, 0.0, True) is None            # la U-Net ya fallaba
+    assert drop_cause(0.6, 0.6, 0.5, False) is None            # no cae
+    assert drop_cause(0.6, 0.0, 0.0, False) == CAUSE_COMPONENT
+    assert drop_cause(0.6, 0.0, 0.0, True) == CAUSE_COMPONENT  # con r = 0 ya fallaba
+    assert drop_cause(0.6, 0.6, 0.0, True) == CAUSE_EMPTY
+    assert drop_cause(0.6, 0.6, 0.02, False) == CAUSE_OTHER

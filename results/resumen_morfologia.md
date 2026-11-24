@@ -5,8 +5,11 @@ mismo protocolo que la configuración final (`configs/main.yaml`: recortes propi
 `amp: false` y semillas 42, 43 y 44):
 
 - **U-Net:** E1 y E6, sin cambios.
-- **U-Net + posprocesamiento fijo:** apertura y cierre con un disco, seguidos de la componente conexa mayor. Se aplica
-  sobre las mismas máscaras de la U-Net.
+- **U-Net + posprocesamiento fijo:** se aplica sobre las mismas máscaras de la U-Net. Hace apertura y cierre con un
+  disco de radio r y después se queda con la componente conexa mayor.
+  - **El efecto principal es quedarse con la componente conexa mayor.** La apertura y el cierre apenas cambian el
+    Dice (secciones 2 y 6).
+  - Con r = 6, la apertura además borra regiones finas, lo que a veces vacía la máscara.
 - **Morph-UNet:** U-Net con un bloque morfológico aprendible.
 
 **Todo se eligió en validación**: la ubicación del bloque, el radio del posprocesamiento y el modelo final. El test
@@ -122,7 +125,62 @@ Exactitud balanceada en test (azar 0.25): anotada 0.22, U-Net 0.26, posproc. 0.2
   reduce un poco.
 - **Ninguna máscara recupera la forma:** todas quedan en el nivel del azar. Esto es coherente con E2–E4 y E10.
 
-## 6. Conclusión
+## 6. Sensibilidad al radio (análisis posterior, no usado para elegir)
+
+`scripts/posproc_sensitivity.py` → `posproc_sensibilidad.csv`, `posproc_caidas.csv`, `posproc_caidas_resumen.csv` y
+`figures/posproc_caidas_ejemplos.png`.
+- Usa las 3 U-Net ya entrenadas (semillas 42, 43 y 44), sin reentrenar.
+- **La decisión no cambia: r = 6**, elegido antes en validación.
+- **El test es solo descriptivo y no se usa para elegir nada.**
+
+Media de 3 semillas (el detalle por semilla está en el CSV). "Vacías" y "Dice < 0.1" son números de recortes.
+
+| Radio | Dice val | HD95 med. val (px) | Vacías val | Dice < 0.1 val | Dice test | HD95 med. test (px) | Vacías test | Dice < 0.1 test |
+|---|---|---|---|---|---|---|---|---|
+| sin posproc. | 0.777 | 13.7 | 3.0 | 6.7 | 0.762 | 15.4 | 2.3 | 13.3 |
+| 0 | 0.791 | 11.7 | 3.0 | 10.7 | 0.769 | 12.9 | 2.3 | 20.0 |
+| 1 | 0.791 | 11.7 | 3.3 | 10.7 | 0.769 | 12.8 | 3.3 | 20.0 |
+| 2 | 0.791 | 12.1 | 3.3 | 10.7 | 0.769 | 12.9 | 4.3 | 20.0 |
+| 3 | 0.791 | 12.1 | 3.3 | 11.0 | 0.769 | 13.0 | 5.0 | 20.3 |
+| 4 | 0.791 | 12.3 | 3.7 | 10.7 | 0.769 | 13.0 | 5.7 | 20.3 |
+| **6 (elegido)** | **0.791** | 12.4 | 4.3 | 10.0 | 0.767 | 13.1 | 7.3 | 21.3 |
+| 8 | 0.790 | 12.4 | 4.3 | 9.7 | 0.764 | 13.1 | 9.3 | 22.0 |
+
+### Recortes donde r = 6 lleva el Dice a < 0.1 y la U-Net no
+
+Total sumado en las 3 semillas; entre paréntesis, los recortes distintos.
+
+| Causa | val | test |
+|---|---|---|
+| a) la apertura vacía la máscara (con r = 0 no estaba vacía) | 1 (1) | 2 (2) |
+| b) la componente mayor es la equivocada (con r = 0 ya falla) | 9 (8) | 19 (14) |
+| c) otra | 0 | 3 (3) |
+
+Los casos c) son de dos tipos:
+- La apertura parte o borra la componente correcta y la mayor pasa a ser otra (test #341).
+- Restos pequeños con Dice 0.06–0.09 de máscaras que ya eran malas (U-Net 0.18).
+
+Los casos a) también partían de máscaras malas: la U-Net tenía Dice 0.10–0.41 con contornos finos y fragmentados.
+
+### Interpretación
+
+- **En validación el radio da igual.** De r = 0 a r = 8, el Dice varía como mucho 0.001 (0.790–0.791), muy por
+  debajo de la DE entre semillas (0.006). Elegir r = 6 fue en la práctica un empate con r = 0. El HD95 mediano es
+  algo mejor con r = 0–1 (11.7 px) que con r = 6 (12.4 px).
+- **En test (descriptivo), a mayor radio, más predicciones vacías:** de 2.3 sin posprocesamiento a 7.3 con r = 6 y
+  9.3 con r = 8. El Dice baja levemente con el radio, de 0.769 con r = 0 a 0.767 con r = 6. Esto no cambia la
+  decisión, pero indica que la apertura tiene un costo y ningún beneficio medible. Con la regla de validación vista
+  ahora, r = 0 habría sido igual de defendible.
+- **El costo principal es la componente mayor equivocada, no la apertura.**
+  - Explica 9 de 10 caídas en validación y 19 de 24 en test.
+  - Ocurre cuando la U-Net segmenta la lesión y además otra estructura densa más grande. El filtro se queda con la
+    equivocada y el recorte pasa de Dice ~0.4–0.6 a 0.
+  - Por eso los recortes con Dice < 0.1 aumentan: de 6.7 a 10 en validación y de 13.3 a 21.3 en test.
+  - Aun así, el Dice medio sube, porque en muchos más recortes el filtro elimina manchas falsas pequeñas.
+- **El posprocesamiento cambia un tipo de error por otro.** Reduce las manchas falsas y el HD95, pero convierte
+  algunos aciertos parciales en fallos totales. Es otra cara del problema de localización de E11.
+
+## 7. Conclusión
 
 - **Para el informe:** agregar morfología aprendible en las capas convolucionales no mejora la segmentación en este
   problema. El cuello de botella es la localización, no la regularidad del borde.

@@ -34,3 +34,26 @@ def postprocess_mask(mask: np.ndarray, radius: int = 0, keep_largest: bool = Tru
 
 def postprocess_stack(masks: np.ndarray, radius: int = 0, keep_largest: bool = True) -> np.ndarray:
     return np.stack([postprocess_mask(m, radius, keep_largest) for m in masks]) if len(masks) else masks
+
+
+DROP_THRESHOLD = 0.1   # "Dice casi 0"
+CAUSE_EMPTY = "a) la apertura vacía la máscara"
+CAUSE_COMPONENT = "b) componente mayor equivocada"
+CAUSE_OTHER = "c) otra"
+
+
+def drop_cause(dice_unet: float, dice_r0: float, dice_r: float, empty_r: bool,
+               thr: float = DROP_THRESHOLD):
+    """Causa por la que el posprocesamiento con radio r lleva un recorte a Dice < ``thr``.
+
+    None si no hay caída (la U-Net ya tenía Dice < thr, o el posprocesado no baja de thr).
+    b) si con r = 0 (solo la componente mayor) ya cae; si no, a) si con radio r queda
+    vacía; c) en cualquier otro caso.
+    """
+    if dice_unet < thr or dice_r >= thr:
+        return None
+    if dice_r0 < thr:
+        return CAUSE_COMPONENT
+    if empty_r:
+        return CAUSE_EMPTY
+    return CAUSE_OTHER

@@ -1,0 +1,35 @@
+conjunto,semilla,row_idx,patient_id,causa,dice_unet,dice_r0,dice_r6,componentes_unet,area_anotada
+val,42,79,P_00487,b) componente mayor equivocada,0.472,0.0,0.0,2,3987
+val,42,142,P_00958,b) componente mayor equivocada,0.138,0.0,0.0,11,5025
+val,42,171,P_01173,b) componente mayor equivocada,0.146,0.0,0.0,4,3443
+val,42,176,P_01273,b) componente mayor equivocada,0.561,0.0,0.0,8,4209
+val,42,194,P_01379,a) la apertura vacía la máscara,0.107,0.107,0.0,1,3661
+val,42,249,P_01876,b) componente mayor equivocada,0.47,0.0,0.0,2,4443
+test,42,31,P_00171,b) componente mayor equivocada,0.117,0.095,0.0,5,3780
+test,42,77,P_00358,b) componente mayor equivocada,0.205,0.0,0.0,2,4215
+test,42,110,P_00482,b) componente mayor equivocada,0.542,0.018,0.001,5,3421
+test,42,119,P_00500,a) la apertura vacía la máscara,0.103,0.102,0.0,2,3544
+test,42,173,P_00773,b) componente mayor equivocada,0.412,0.0,0.0,3,3619
+test,42,196,P_00942,b) componente mayor equivocada,0.347,0.0,0.0,5,4002
+test,42,341,P_01684,c) otra,0.45,0.654,0.0,4,3652
+test,42,356,P_01765,b) componente mayor equivocada,0.528,0.001,0.001,2,4913
+val,43,32,P_00224,b) componente mayor equivocada,0.223,0.0,0.0,5,3700
+test,43,49,P_00200,c) otra,0.18,0.18,0.055,1,6167
+test,43,89,P_00391,b) componente mayor equivocada,0.474,0.0,0.0,5,4188
+test,43,149,P_00639,a) la apertura vacía la máscara,0.415,0.399,0.0,4,3829
+test,43,173,P_00773,b) componente mayor equivocada,0.113,0.0,0.0,5,3619
+test,43,196,P_00942,b) componente mayor equivocada,0.147,0.0,0.0,11,4002
+test,43,203,P_00962,b) componente mayor equivocada,0.146,0.054,0.0,4,4128
+test,43,246,P_01192,b) componente mayor equivocada,0.237,0.0,0.0,2,3648
+test,43,341,P_01684,b) componente mayor equivocada,0.168,0.0,0.0,5,3652
+val,44,32,P_00224,b) componente mayor equivocada,0.552,0.0,0.0,3,3700
+val,44,65,P_00419,b) componente mayor equivocada,0.382,0.0,0.0,5,2823
+val,44,177,P_01273,b) componente mayor equivocada,0.574,0.0,0.0,2,3659
+test,44,31,P_00171,c) otra,0.176,0.157,0.091,8,3780
+test,44,59,P_00238,b) componente mayor equivocada,0.402,0.0,0.0,2,2723
+test,44,76,P_00358,b) componente mayor equivocada,0.128,0.042,0.003,6,4286
+test,44,102,P_00457,b) componente mayor equivocada,0.593,0.0,0.0,2,3724
+test,44,173,P_00773,b) componente mayor equivocada,0.42,0.0,0.0,2,3619
+test,44,196,P_00942,b) componente mayor equivocada,0.319,0.0,0.0,4,4002
+test,44,297,P_01510,b) componente mayor equivocada,0.145,0.095,0.088,7,4122
+test,44,341,P_01684,b) componente mayor equivocada,0.38,0.0,0.0,6,3652
