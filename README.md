@@ -65,7 +65,7 @@ Guía detallada en [docs/GUIA_REPOSITORIO.md](docs/GUIA_REPOSITORIO.md).
 * Python 3.10 o superior (probado con 3.11.9 en Windows 11).
 * Paquetes de `requirements.txt` (numpy, scipy, pandas, scikit-image, scikit-learn, matplotlib, PyTorch, PyYAML,
   Jupyter, pytest).
-* GPU NVIDIA recomendada (probado con una GTX 1650 de 4 GB: ~16 s por época con la U-Net y ~60 s con la Morph-UNet).
+* GPU NVIDIA recomendada (probado con una GTX 1650 de 4 GB: ~16 s por época con la U-Net, ~29 s con SegFormer-B0 y ~60 s con la Morph-UNet).
   Sin GPU funciona en CPU, mucho más lento.
 * ~6 GB de disco para el dataset y ~1 GB para `outputs/`.
 
@@ -78,6 +78,10 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1          # Linux/Mac: source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+**Opcional, solo para SegFormer-B0 (E13):** `pip install "transformers>=4.40"` (probado con 5.24.1). La primera
+ejecución descarga una vez los pesos preentrenados `nvidia/mit-b0` desde Hugging Face a la caché del usuario; no se
+versionan. Sin `transformers`, todo lo demás funciona y sus pruebas se omiten.
 
 **GPU (NVIDIA):** `pip install -r requirements.txt` puede instalar la versión de PyTorch solo para CPU. Para usar la
 GPU, instalar PyTorch con CUDA con el comando que indica https://pytorch.org/get-started/locally/ para tu sistema

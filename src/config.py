@@ -30,11 +30,12 @@ class Config:
     workers: int = 1        # procesos para generar los recortes (no cambia el resultado)
 
     # --- modelo / entrenamiento -------------------------------------------
-    arch: str = "unet"        # "unet" o "morph_unet" (U-Net + bloque morfológico aprendible, src/morph.py)
+    arch: str = "unet"        # "unet", "morph_unet" (bloque morfológico, src/morph.py) o "segformer_b0" (src/segformer_model.py)
     base_channels: int = 32   # canales de la 1ª capa de la U-Net (16 si solo hay CPU)
     morph_channels: int = 4   # morph_unet: canales del bloque morfológico
     morph_kernel: int = 5     # morph_unet: lado del elemento estructurante
     morph_position: str = "head"  # morph_unet: "head" (antes de la cabeza 1x1) o "skip" (salto de máxima resolución)
+    pretrained: str = "nvidia/mit-b0"  # segformer_b0: pesos del codificador en Hugging Face ("" = aleatorios)
     loss: str = "bce_dice"    # "bce_dice" (BCE + Dice) o "dice" (solo Dice suave)
     train_seed: int | None = None  # semilla del entrenamiento (pesos, lotes, aumento); None = ``seed``
     batch_size: int = 16

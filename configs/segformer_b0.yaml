@@ -1,0 +1,32 @@
+# SegFormer-B0 (src/segformer_model.py): transformer con atención global, codificador MiT-b0 preentrenado en ImageNet.
+# Todo lo demás es idéntico a main.yaml, salvo lr (un transformer preentrenado necesita una tasa menor).
+
+name: segformer_b0
+
+data:
+  archive_dir: data/CBIS-DDSM # carpeta con csv/ y jpeg/ (ver docs/DATA.md)
+  out_dir: outputs            # caché de recortes, pesos y resultados (no versionado)
+  val_frac: 0.2               # fracción de PACIENTES del train oficial usada como validación
+
+preprocessing:
+  img_size: 256               # lado de los recortes ROI
+  context: 3.0                # lado del recorte = 3 x lado mayor de la caja de la lesión
+  jitter: 0.2                 # desplazamiento aleatorio del centro (±20 % del lado)
+  min_side: 96                # lado mínimo del recorte (px de la mamografía original)
+  workers: 8                  # procesos para generar los recortes (no cambia el resultado)
+
+model:
+  arch: segformer_b0          # unet | morph_unet | segformer_b0
+  pretrained: nvidia/mit-b0   # se descarga una vez de Hugging Face (no se versiona)
+  base_channels: 16           # no se usa en segformer_b0
+  loss: bce_dice              # bce_dice (BCE + Dice) o dice (solo Dice)
+
+training:
+  seed: 42
+  epochs: 40
+  batch_size: 8
+  lr: 0.0001                  # elegido en validación entre 1e-4 y 3e-4 (semilla 42)
+  weight_decay: 0.0001
+  patience: 10                # early stopping sobre el Dice de validación
+  threshold: 0.5
+  amp: false                  # NO activar en GPUs GTX 16xx: fp16 produce pérdida NaN

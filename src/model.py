@@ -104,16 +104,19 @@ class MorphUNet(UNet):
         return skip
 
 
-ARCHS = ("unet", "morph_unet")
+ARCHS = ("unet", "morph_unet", "segformer_b0")
 
 
 def build_model(cfg) -> nn.Module:
-    """Red indicada por ``cfg.arch`` (``unet`` o ``morph_unet``)."""
+    """Red indicada por ``cfg.arch`` (``unet``, ``morph_unet`` o ``segformer_b0``)."""
     if cfg.arch == "unet":
         return UNet(base=cfg.base_channels)
     if cfg.arch == "morph_unet":
         return MorphUNet(base=cfg.base_channels, morph_channels=cfg.morph_channels,
                          kernel_size=cfg.morph_kernel, position=cfg.morph_position)
+    if cfg.arch == "segformer_b0":
+        from .segformer_model import SegFormerBinary   # transformers es opcional
+        return SegFormerBinary(pretrained=cfg.pretrained)
     raise ValueError(f"arch desconocida: {cfg.arch!r}. Opciones: {ARCHS}")
 
 
