@@ -22,6 +22,7 @@ versiona. `results/` guarda solo las tablas y figuras finales.
 | `quick.yaml` | Igual que `main` con 3 épocas (demo y verificación rápida) |
 | `ablations.yaml` | Variantes de E5 (context, jitter, canales base, pérdida) sobre `main.yaml` |
 | `segformer_b0.yaml` | E13: SegFormer-B0 (codificador `nvidia/mit-b0` preentrenado), lr 3e-4; el resto igual a `main.yaml` |
+| `segformer_b0_scratch.yaml` | E13b: el mismo SegFormer-B0 con pesos aleatorios (`pretrained: false`), lr 3e-4 (no se volvió a elegir) |
 | `morph_unet.yaml`, `morph_unet_skip.yaml` | E12: `main.yaml` + bloque morfológico antes de la cabeza 1x1 o en el salto de máxima resolución |
 
 Los YAML se agrupan por secciones (`data`, `preprocessing`, `model`, `training`), que `load_config` aplana; toda
@@ -63,6 +64,7 @@ clave tiene que ser un campo de `src/config.py:Config`.
 | `margin_experiment.py` | E10 (margen desde la geometría; reutiliza `run_task` de `shape_control.py`) | no |
 | `failure_analysis.py` | E11 (modos de fallo y desplazamiento) | no |
 | `compare_segformer.py` | E13 (elección del lr, comparación, modos de fallo con McNemar, forma) | no |
+| `compare_segformer_controls.py` | E13b (U-Net / SegFormer preentrenado / sin preentrenar, desglose arquitectura–preentrenamiento, control de lr de la U-Net) | no |
 | `posproc_sensitivity.py` | Sensibilidad del posprocesamiento al radio y causas de las caídas (análisis posterior) | no |
 | `compare_morphology.py` | E12 (ubicación del bloque, radio del posprocesamiento elegido en validación, comparación) | no |
 

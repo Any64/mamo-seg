@@ -138,3 +138,110 @@ Se usa el árbol de E1 (profundidad 3, ajustado en train con máscaras anotadas)
   - **Muestra:** son 3 semillas, y varios recortes son del mismo paciente; el IC por paciente lo tiene en cuenta.
 - **Lo que no cambia:** las cifras de referencia ya publicadas (U-Net 0.762 ± 0.009) y la decisión de E12. E13 se
   informa como un experimento adicional.
+
+## 5. Controles: preentrenamiento y lr
+
+Análisis añadido después de E13. No cambia ninguna cifra anterior ni la decisión de E12.
+- **SegFormer-B0 sin preentrenar** (`configs/segformer_b0_scratch.yaml`, `pretrained: false`):
+  - Misma arquitectura que `nvidia/mit-b0`, con pesos aleatorios.
+  - lr 3e-4, el elegido antes para la versión preentrenada (no se volvió a elegir).
+  - Semillas 42, 43 y 44. Mismo protocolo: 40 épocas como máximo, paciencia 10, `amp: false`.
+- **U-Net con lr 3e-4:** la de `main.yaml`, solo con la semilla 42 y evaluada solo en validación.
+
+Script: `scripts/compare_segformer_controls.py`.
+
+### Entrenamiento (`segformer_controles_entrenamiento.csv`, `figures/segformer_controles_curvas.png`)
+
+| Modelo | Dice val por semilla (42 / 43 / 44) | Épocas (mejor época) | s/época (mediana) |
+|---|---|---|---|
+| SegFormer-B0 preentrenado | 0.809 / 0.811 / 0.809 | 24–32 (14–22) | 29–34 |
+| SegFormer-B0 sin preentrenar | 0.798 / 0.806 / 0.800 | **40 (39–40)** | 28–34 |
+
+Ningún NaN. El preentrenamiento sobre todo acelera la convergencia: llega a ~0.78–0.80 entre las épocas 3 y 8, mientras que sin
+preentrenar se necesitan ~35 épocas (ver las curvas).
+
+### Control de lr de la U-Net (`unet_control_lr.csv`; solo validación, semilla 42)
+
+| lr | Dice val | Épocas (mejor) |
+|---|---|---|
+| 1e-3 (referencia, `main.yaml`) | 0.781 | 40 (36) |
+| 3e-4 | 0.784 | 40 (39) |
+
+La diferencia es de +0.003, mucho menor que la ventaja de SegFormer (+0.033). El lr no explica la diferencia entre las
+dos familias. La U-Net de referencia no cambia, y este run no se evaluó en test.
+
+### Comparación (media ± DE de 3 semillas; `segformer_controles_comparacion.csv`, `segformer_controles_por_semilla.csv`)
+
+| Método | Conj. | Dice | IoU | Precisión | Sensib. | HD95 medio (px) | HD95 mediano (px) | Vacías | Dice < 0.1 |
+|---|---|---|---|---|---|---|---|---|---|
+| U-Net | val | 0.777 ± 0.003 | 0.666 | 0.769 | 0.826 | 26.6 | 13.7 | 3.0 | 6.7 |
+| SegFormer-B0 sin preentrenar | val | 0.801 ± 0.005 | 0.693 | 0.762 | 0.862 | 19.4 | 12.4 | 0 | 3.7 |
+| SegFormer-B0 preentrenado | val | 0.810 ± 0.001 | 0.701 | 0.753 | 0.888 | 16.4 | 12.5 | 0 | 5.0 |
+| U-Net | test | 0.762 ± 0.009 | 0.652 | 0.758 | 0.804 | 25.6 | 15.4 | 2.3 | 13.3 |
+| SegFormer-B0 sin preentrenar | test | 0.783 ± 0.001 | 0.674 | 0.746 | 0.839 | 19.0 | 12.9 | 0 | 11.7 |
+| SegFormer-B0 preentrenado | test | 0.792 ± 0.003 | 0.683 | 0.738 | 0.867 | 17.4 | 12.8 | 0 | 10.0 |
+
+### Diferencias pareadas (`segformer_controles_pruebas.csv`; IC 95 % bootstrap por paciente, Wilcoxon)
+
+| Diferencia | Conj. | Δ Dice [IC 95 %] | p | Δ HD95 medio px [IC 95 %] | p |
+|---|---|---|---|---|---|
+| Sin preentrenar − U-Net | val | +0.024 [0.012, 0.038] | 0.002 | −7.2 [−9.7, −5.1] | < 1e-4 |
+| Preentrenado − sin preentrenar | val | +0.008 [−0.002, 0.019] | 0.86 | −2.9 [−4.9, −1.3] | 0.33 |
+| Sin preentrenar − U-Net | test | +0.020 [0.010, 0.031] | < 1e-4 | −7.0 [−8.7, −5.4] | < 1e-4 |
+| Preentrenado − sin preentrenar | test | +0.010 [−0.001, 0.020] | 0.39 | −1.6 [−2.8, −0.3] | 0.23 |
+
+### Desglose del Dice en tres escalones (`segformer_controles_desglose.csv`)
+
+| Conj. | U-Net | → SegFormer sin preentrenar (arquitectura) | → SegFormer preentrenado (preentrenamiento) | Ventaja total |
+|---|---|---|---|---|
+| **val** | 0.777 | 0.801: **+0.024 [0.012, 0.038]**, ~74 % | 0.810: **+0.008 [−0.002, 0.019]**, ~26 % | +0.033 |
+| test (solo se informa) | 0.762 | 0.783: +0.020 [0.010, 0.031], ~68 % | 0.792: +0.010 [−0.001, 0.020], ~32 % | +0.030 |
+
+Los porcentajes salen de las estimaciones puntuales. Su incertidumbre es grande: el IC del escalón de preentrenamiento
+incluye el 0.
+
+### Fallos (`segformer_controles_fallos.csv`, `segformer_controles_fallos_pruebas.csv`; media por semilla)
+
+| Modo | U-Net val / test | Sin preentrenar val / test | Preentrenado val / test |
+|---|---|---|---|
+| Fallos (Dice < 0.1) | 6.7 / 13.3 | 3.7 / 11.7 | 5.0 / 10.0 |
+| Predicción vacía | 3.0 / 2.3 | 0 / 0 | 0 / 0 |
+| Otra zona sin solape | 1.0 / 5.3 | 1.7 / 3.3 | 4.3 / 4.0 |
+| Sub/sobresegmentación | 2.7 / 5.7 | 2.0 / 8.3 | 0.7 / 6.0 |
+
+- Sin preentrenar, SegFormer ya elimina las predicciones vacías (McNemar frente a la U-Net: p = 0.004 en val y
+  0.016 en test).
+- "Otra zona" frente a la U-Net no cambia de forma significativa (p = 0.73 en val y 0.21 en test).
+- El exceso de "otra zona" del preentrenado en validación (E13, sección 2) aparece también frente al modelo sin
+  preentrenar (10 frente a 2 discordantes, p = 0.039), pero no en test (p = 0.80). Es débil y no se interpreta.
+
+### Interpretación: ¿arquitectura o preentrenamiento?
+
+- **La mayor parte de la ventaja se atribuye a la arquitectura.** Con pesos aleatorios, el mismo lr y el mismo
+  presupuesto, SegFormer-B0 ya supera a la U-Net:
+  - +0.024 en val y +0.020 en test, con IC que excluyen el 0;
+  - las 3 semillas sin preentrenar quedan por encima de las 3 de la U-Net, en val y en test;
+  - también mejora el HD95 y elimina las predicciones vacías.
+- **El preentrenamiento añade poco y no es concluyente con esta muestra.** Suma +0.008 en val y +0.010 en test.
+  - El sentido es consistente: en cada semilla, el preentrenado queda por encima del sin preentrenar, en val y en test.
+  - Pero el IC por paciente incluye el 0 y el Wilcoxon no es significativo (p = 0.86 y 0.39). La mediana de las
+    diferencias por recorte es ~0.
+  - No se puede afirmar que exista una diferencia, ni descartar una pequeña (hasta ~0.02).
+- **Qué aporta el preentrenamiento con seguridad:** convergencia más rápida (mejor época 14–22 frente a 39–40), lo que
+  reduce el costo del entrenamiento.
+- **El lr no explica la diferencia:** la U-Net con lr 3e-4 solo gana +0.003 en validación.
+- **Cautelas:**
+  - Aunque sea "arquitectura", también mezcla tamaño (3.7 M frente a 1.9 M parámetros), decodificador y atención
+    global; este control no los separa.
+  - La conclusión de E13 sobre "otra zona" no cambia: ningún SegFormer la reduce de forma significativa.
+
+### Limitaciones de estos controles
+
+- **(a) Presupuesto de 40 épocas.** Los 4 modelos nuevos llegaron al tope de 40 épocas con la mejor época en la 39–40:
+  las 3 semillas sin preentrenar y la U-Net con lr 3e-4. Seguían mejorando. Por eso, la comparación vale "con un
+  presupuesto de 40 épocas" y no dice dónde convergerían. Con más épocas, el modelo sin preentrenar podría acercarse
+  más al preentrenado, así que el escalón de preentrenamiento es, en todo caso, una cota con este presupuesto. No se
+  alargó el entrenamiento.
+- **(b) Época 1 más lenta.** En cada SegFormer, la época 1 fue más lenta por el calentamiento de CUDA: 42–47 s sin
+  preentrenar y 43–48 s preentrenado. Desde la época 2, las medianas son 28–34 s.
+- **(c) Control de lr limitado.** El control de lr de la U-Net es de una sola semilla (42) y solo en validación.

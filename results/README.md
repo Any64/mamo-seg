@@ -22,6 +22,7 @@ Para regenerarlos (ver README principal):
 | **E11** Análisis de fallos (no entrena) | `python scripts/failure_analysis.py` | `results/fallos_*` | < 1 min |
 | **E12** Morph-UNet y posprocesamiento fijo | `configs/morph_unet*.yaml` con `run_experiment.py --no-test`, luego `python scripts/compare_morphology.py` | `outputs/runs/morph_*`, `results/morfologia_*`, `posproc_seleccion_radio.csv` | ~35–40 min por entrenamiento, comparación ~5 min |
 | **E13** SegFormer-B0 frente a la U-Net | `configs/segformer_b0.yaml` con `run_experiment.py --no-test --lr ...`, luego `python scripts/compare_segformer.py` | `outputs/runs/segformer_*`, `results/segformer_*` | ~11–19 min por entrenamiento, comparación ~5 min |
+| **E13b** controles: SegFormer-B0 sin preentrenar y lr de la U-Net | `configs/segformer_b0_scratch.yaml` y `main.yaml --lr 3e-4` con `run_experiment.py --no-test`, luego `python scripts/compare_segformer_controls.py` | `outputs/runs/segformer_scratch_*`, `outputs/runs/unet_lr3e-4`, `results/segformer_controles_*`, `results/unet_control_lr.csv` | ~20–23 min por entrenamiento, comparación ~5 min |
 
 **Cifra de referencia** (configuración final, media ± DE de 3 semillas): Dice de la U-Net 0.777 ± 0.003 en
 validación y **0.762 ± 0.009 en test**; validación cruzada por paciente 0.771 ± 0.014 (ver `variabilidad_semillas.csv`
@@ -139,3 +140,19 @@ Resumen e interpretación en `resumen_segformer.md`. Comando:
 | `segformer_forma.csv`, `segformer_forma_distribucion.csv` | Forma BI-RADS (árbol de E1) con la máscara de cada método |
 | `segformer_ejemplos.csv`, `figures/segformer_ejemplos.png` | Los 8 recortes de test donde SegFormer más difiere de la U-Net (semilla 42) |
 | `figures/segformer_comparacion.png` | Dice, HD95 mediano y recortes con Dice < 0.1 por método |
+
+## Controles de E13 (E13b): preentrenamiento y lr
+
+Interpretación en la sección 5 de `resumen_segformer.md`. Comando:
+`python scripts/compare_segformer_controls.py --unet-runs main final_seed43 final_seed44 --segformer-runs segformer_lr3e-4 segformer_s43 segformer_s44 --scratch-runs segformer_scratch_s42 segformer_scratch_s43 segformer_scratch_s44 --unet-lr-runs main unet_lr3e-4`
+(no entrena; el test solo se informa).
+
+| Archivo | Contenido |
+|---|---|
+| `unet_control_lr.csv` | U-Net con lr 1e-3 (referencia) y 3e-4: Dice de validación, semilla 42 (sin test) |
+| `segformer_controles_entrenamiento.csv` | SegFormer-B0 preentrenado y sin preentrenar: Dice val, épocas, mejor época, s/época, NaN |
+| `segformer_controles_comparacion.csv`, `segformer_controles_por_semilla.csv` | Dice, IoU, precisión, sensibilidad, HD95 medio y mediano, vacías y Dice < 0.1 de U-Net, SegFormer preentrenado y sin preentrenar |
+| `segformer_controles_pruebas.csv` | (sin preentrenar − U-Net) y (preentrenado − sin preentrenar): IC bootstrap por paciente y por recorte, Wilcoxon |
+| `segformer_controles_desglose.csv` | Desglose del Dice en tres escalones (arquitectura y preentrenamiento), con IC y fracción de la ventaja |
+| `segformer_controles_fallos.csv`, `segformer_controles_fallos_pruebas.csv` | Fallos por modo (criterio de E11) y McNemar exacto |
+| `figures/segformer_controles_curvas.png` | Curvas de Dice de validación por época (3 semillas por modelo) |

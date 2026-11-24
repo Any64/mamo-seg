@@ -110,11 +110,24 @@
 % TODO: SegFormer-B0 \citep{xie2021segformer} (codificador MiT-b0 preentrenado en ImageNet, 3.7 M parámetros, lr 3e-4
 % elegido en val): Dice test 0.792 ± 0.003 frente a 0.762 ± 0.009 (+0.030 [0.019, 0.041]); la mejora viene de la
 % sensibilidad y de no dejar predicciones vacías; los fallos en otra zona no bajan (McNemar p = 0.48 en test).
-egin{figure}[ht]
+\begin{figure}[ht]
   \centering
   \includegraphics[width=\linewidth]{segformer_comparacion.png}
   \caption{U-Net frente a SegFormer-B0, con y sin posprocesamiento fijo (media ± DE de 3 semillas).}
   \label{fig:segformer}
+\end{figure}
+
+% TODO (controles E13b): SegFormer-B0 sin preentrenar (pesos aleatorios, lr 3e-4, 3 semillas): Dice val 0.801 ± 0.005,
+% test 0.783 ± 0.001. Desglose del Dice de validación: U-Net 0.777 -> sin preentrenar 0.801 (arquitectura, +0.024
+% [0.012, 0.038], ~74 %) -> preentrenado 0.810 (preentrenamiento, +0.008 [-0.002, 0.019], p = 0.86, ~26 %, no
+% concluyente); en test +0.020 [0.010, 0.031] y +0.010 [-0.001, 0.020]. El preentrenamiento sobre todo acelera la
+% convergencia. U-Net con lr 3e-4: Dice val 0.784 frente a 0.781 (semilla 42), el lr no explica la diferencia.
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{segformer_controles_curvas.png}
+  \caption{Dice de validación por época: U-Net, SegFormer-B0 preentrenado y sin preentrenar (3 semillas cada uno).
+  Los modelos sin preentrenar llegan al tope de 40 épocas.}
+  \label{fig:segformer-controles}
 \end{figure}
 
 \subsection{Dónde falla la U-Net}
@@ -161,6 +174,10 @@
 \section{Limitaciones}
 % TODO: película digitalizada; posición aproximada conocida; máscaras toscas; variabilidad entre lectores;
 % pocas semillas; p-valores optimistas por recortes del mismo paciente; no determinismo de cuDNN.
+% Controles de E13 (E13b): (a) los 4 modelos nuevos (SegFormer-B0 sin preentrenar x 3 y U-Net con lr 3e-4) llegaron
+% al tope de 40 épocas con mejor época 39--40: la comparación es con un presupuesto de 40 épocas y no dice dónde
+% convergerían; (b) la época 1 de cada SegFormer fue más lenta (42--48 s) por el calentamiento de CUDA (28--34 s desde
+% la época 2); (c) el control de lr de la U-Net es solo de la semilla 42 y en validación.
 
 \section{Conclusiones}
 % TODO

@@ -155,6 +155,7 @@ Tiempos medidos en una GTX 1650 de 4 GB con los recortes en caché. Cada entrena
 | E11 | Análisis de fallos (Dice < 0.1) | `python scripts/failure_analysis.py` | `results/fallos_*` | < 1 min* |
 | E12 | Morph-UNet y posprocesamiento fijo | `python scripts/run_experiment.py --config configs/morph_unet.yaml --no-test --name morph_unet_s42` (y `morph_unet_skip.yaml`; semillas con `--train-seed`), luego `python scripts/compare_morphology.py ...` (ver su docstring) | `outputs/runs/morph_*`, `results/morfologia_*` | ~35–40 min por entrenamiento (59 s/época), comparación ~5 min |
 | E13 | SegFormer-B0 (transformer, codificador preentrenado; requiere `transformers`) | `python scripts/run_experiment.py --config configs/segformer_b0.yaml --no-test --lr 1e-4 --name segformer_lr1e-4` (ídem 3e-4; semillas 43/44 con `--train-seed`), luego `python scripts/compare_segformer.py ...` (ver su docstring) | `outputs/runs/segformer_*`, `results/segformer_*` | ~11–19 min por entrenamiento (29–34 s/época), comparación ~5 min |
+| E13b | Controles de E13: SegFormer-B0 sin preentrenar (3 semillas) y U-Net con lr 3e-4 (semilla 42, solo val) | `python scripts/run_experiment.py --config configs/segformer_b0_scratch.yaml --no-test --train-seed 42 --name segformer_scratch_s42` (ídem 43/44) y `python scripts/run_experiment.py --config configs/main.yaml --no-test --lr 3e-4 --name unet_lr3e-4`, luego `python scripts/compare_segformer_controls.py ...` (ver su docstring) | `outputs/runs/segformer_scratch_*`, `outputs/runs/unet_lr3e-4`, `results/segformer_controles_*`, `results/unet_control_lr.csv` | ~20–23 min por SegFormer sin preentrenar (40 épocas), ~15 min la U-Net, comparación ~5 min |
 
 \* E9 y E11 predicen una vez con los modelos de E1/E6 y guardan las máscaras en `outputs/runs/<run>/pred_masks.npz`.
 
@@ -170,7 +171,7 @@ python -m pytest -q tests
 Generan un dataset sintético con la misma estructura que el de Kaggle y verifican el pipeline completo (rutas,
 alineación, referencias, forma, entrenamiento, `run_experiment.py` de punta a punta, validación cruzada por
 paciente, estadística, capas morfológicas frente a scipy, SegFormer-B0 sin descarga, Hausdorff 95, posprocesamiento, notebook de demostración y
-`download_data.py` sin red). 46 pruebas (3 se omiten sin `transformers`), ~1 min.
+`download_data.py` sin red). 47 pruebas (4 se omiten sin `transformers`), ~1 min.
 
 ## Resultados
 
@@ -258,6 +259,20 @@ independientes de la forma anotada. El emparejamiento recorte ↔ máscara ↔ f
   atención global.
 - **Forma BI-RADS:** no cambia.
 
+**Controles (E13b; detalle en la sección 5 de `results/resumen_segformer.md`):**
+
+| Método | Dice val | Dice test | HD95 test (px, mediana) | Vacías (test) | Dice < 0.1 (test) |
+|---|---|---|---|---|---|
+| SegFormer-B0 sin preentrenar (pesos aleatorios, lr 3e-4) | 0.801 ± 0.005 | 0.783 ± 0.001 | 12.9 | 0 | 11.7 |
+| U-Net con lr 3e-4 (solo semilla 42, solo val) | 0.784 (frente a 0.781 con lr 1e-3) | — | — | — | — |
+
+- **Desglose del Dice de validación:** U-Net 0.777 → SegFormer sin preentrenar 0.801 → SegFormer preentrenado 0.810.
+  - Arquitectura: +0.024 [IC 95 % por paciente 0.012, 0.038], p = 0.002 (~74 % de la ventaja).
+  - Preentrenamiento: +0.008 [−0.002, 0.019], p = 0.86 (~26 %; no concluyente).
+  - En test (solo se informa): +0.020 [0.010, 0.031] y +0.010 [−0.001, 0.020].
+- **Conclusión:** la mayor parte de la mejora se atribuye a la arquitectura (que también difiere en tamaño). El
+  preentrenamiento sobre todo acelera la convergencia. El lr de la U-Net no explica la diferencia (+0.003).
+
 ## Limitaciones
 
 * CBIS-DDSM proviene de mamografías de película digitalizada (años 90), no de mamografía digital moderna (FFDM).
@@ -275,6 +290,11 @@ independientes de la forma anotada. El emparejamiento recorte ↔ máscara ↔ f
   nueva ejecución de E1 dio un Dice en test de 0.769, frente a 0.771 en la entrega parcial.
 * E13 compara una red preentrenada (SegFormer-B0, ImageNet) con una U-Net entrenada desde cero, con distinto número
   de parámetros; el lr solo se ajustó para SegFormer (2 valores).
+* Controles de E13 (E13b):
+  * Los 4 modelos nuevos (3 SegFormer-B0 sin preentrenar y la U-Net con lr 3e-4) llegaron al tope de 40 épocas, con la
+    mejor época en la 39–40. La comparación vale "con un presupuesto de 40 épocas" y no dice dónde convergerían.
+  * La época 1 de cada SegFormer fue más lenta (42–48 s) por el calentamiento de CUDA; desde la época 2, 28–34 s.
+  * El control de lr de la U-Net es de una sola semilla (42) y solo en validación.
 * E12 compara la Morph-UNet con solo 3 semillas y 40 épocas; la semilla 43 alcanzó su mejor época en la última.
 
 ## Referencias
