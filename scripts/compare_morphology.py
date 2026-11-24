@@ -31,12 +31,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np               # noqa: E402
 import pandas as pd              # noqa: E402
-import yaml                      # noqa: E402
 
 from src import shape as shp                                   # noqa: E402
 from src.config import Config, load_config                     # noqa: E402
 from src.metrics import extended_metrics                       # noqa: E402
-from src.pipeline import load_unet, predict_masks, prepare_data  # noqa: E402
+from src.pipeline import cached_masks, load_unet, prepare_data  # noqa: E402
+from src.pipeline import run_config as pipeline_run_config  # noqa: E402
 from src.postprocess import postprocess_stack                  # noqa: E402
 from src.stats import bootstrap_mean_ci, paired_wilcoxon       # noqa: E402
 
@@ -49,9 +49,7 @@ METRICS = ["dice", "iou", "precision", "recall", "hd95", "n_componentes"]
 
 
 def run_config(runs_dir: Path, run: str) -> Config:
-    raw = yaml.safe_load((runs_dir / run / "config.yaml").read_text(encoding="utf-8"))
-    valid = Config().to_dict()
-    return Config(**{k: v for k, v in raw.items() if k in valid})
+    return pipeline_run_config(runs_dir / run)
 
 
 def run_seed(cfg: Config) -> int:
@@ -60,16 +58,7 @@ def run_seed(cfg: Config) -> int:
 
 def get_masks(runs_dir: Path, run: str, data: dict) -> dict:
     """Máscaras binarias {split: (N,H,W)} del modelo ``run`` (con caché en pred_masks.npz)."""
-    path = runs_dir / run / "pred_masks.npz"
-    if path.exists():
-        z = np.load(path)
-        if all(s in z and len(z[s]) == len(data[s].X) for s in SPLITS):
-            return {s: z[s] for s in SPLITS}
-    cfg = run_config(runs_dir, run)
-    model = load_unet(cfg, runs_dir / run / "unet_best.pt")
-    masks = {s: predict_masks(model, data[s].X, cfg.threshold) for s in SPLITS}
-    np.savez_compressed(path, **masks)
-    return masks
+    return cached_masks(runs_dir / run, data, SPLITS)
 
 
 def position_table(runs_dir: Path, runs: list, unet_run: str) -> pd.DataFrame:

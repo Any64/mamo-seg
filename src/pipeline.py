@@ -111,6 +111,33 @@ def load_unet(cfg: Config, ckpt_path):
     return model
 
 
+def run_config(run_dir) -> Config:
+    """Config guardada en ``<run_dir>/config.yaml`` (las claves nuevas toman su valor por defecto)."""
+    import yaml
+    raw = yaml.safe_load((Path(run_dir) / "config.yaml").read_text(encoding="utf-8"))
+    valid = Config().to_dict()
+    return Config(**{k: v for k, v in raw.items() if k in valid})
+
+
+def cached_masks(run_dir, data: dict, splits=EVAL_SPLITS) -> dict:
+    """Máscaras {split: (N,H,W) bool} del modelo guardado en ``run_dir``.
+
+    Se guardan en ``<run_dir>/pred_masks.npz`` y se reutilizan si coinciden en número
+    de recortes; si falta algún split se vuelven a predecir todos.
+    """
+    run_dir = Path(run_dir)
+    path = run_dir / "pred_masks.npz"
+    if path.exists():
+        z = np.load(path)
+        if all(s in z and len(z[s]) == len(data[s].X) for s in splits):
+            return {s: z[s] for s in splits}
+    cfg = run_config(run_dir)
+    model = load_unet(cfg, run_dir / "unet_best.pt")
+    masks = {s: predict_masks(model, data[s].X, cfg.threshold) for s in splits}
+    np.savez_compressed(path, **masks)
+    return masks
+
+
 def evaluate_unet(model, data: dict, cfg: Config, splits=EVAL_SPLITS):
     """Devuelve (predicciones {split: máscaras}, métricas {(U-Net, split): DataFrame})."""
     preds = {s: predict_masks(model, data[s].X, cfg.threshold) for s in splits}
