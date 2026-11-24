@@ -1,0 +1,52 @@
+{
+  "abs_shift": {
+    "mediana_fallo": 0.18786253236847278,
+    "mediana_no_fallo": 0.1540365374225992,
+    "U": 3758.0,
+    "p": 0.04398394917484542
+  },
+  "lesion_area_frac": {
+    "mediana_fallo": 0.05475616455078125,
+    "mediana_no_fallo": 0.063232421875,
+    "U": 1428.0,
+    "p": 0.000601096228485529
+  },
+  "subtlety": {
+    "mediana_fallo": 3.0,
+    "mediana_no_fallo": 4.0,
+    "U": 2087.5,
+    "p": 0.04833818325441098
+  },
+  "fallos_por_tercil_shift": {
+    "bajo": 2,
+    "medio": 5,
+    "alto": 9
+  },
+  "n_por_tercil_shift": {
+    "bajo": 126,
+    "medio": 126,
+    "alto": 126
+  },
+  "chi2_tercil": {
+    "p": 0.08939326414715461
+  },
+  "modelo": "main",
+  "detalle_sub_sobre": {
+    "subsegmentación": 5,
+    "sobresegmentación": 2
+  },
+  "otras_semillas": {
+    "final_seed43": {
+      "n_fallos": 14,
+      "predicción vacía": 2,
+      "otra zona sin solape": 5,
+      "sub/sobresegmentación": 7
+    },
+    "final_seed44": {
+      "n_fallos": 10,
+      "predicción vacía": 3,
+      "otra zona sin solape": 4,
+      "sub/sobresegmentación": 3
+    }
+  }
+}
