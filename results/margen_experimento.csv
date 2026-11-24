@@ -1,0 +1,34 @@
+tarea,sigma,clasificador,conjunto,n,positivo,AUC,exactitud balanceada,elegida
+M1: descriptores -> margen no circunscrito,0,regresión logística,val,218,no circunscrito,0.5333,0.4998,False
+M1: descriptores -> margen no circunscrito,0,random forest,val,218,no circunscrito,0.5566,0.5268,False
+M1: descriptores -> margen no circunscrito,4,regresión logística,val,218,no circunscrito,0.5872,0.5491,False
+M1: descriptores -> margen no circunscrito,4,random forest,val,218,no circunscrito,0.5838,0.5917,False
+M1: descriptores -> margen no circunscrito,-,clase mayoritaria,val,218,no circunscrito,0.5,0.5,False
+M1: descriptores -> margen no circunscrito,-,clase mayoritaria,test,295,no circunscrito,0.5,0.5,False
+M1: descriptores -> margen no circunscrito,4,regresión logística,test,295,no circunscrito,0.6458,0.617,True
+M2: descriptores -> margen espiculado,0,regresión logística,val,252,SPICULATED,0.5697,0.5461,False
+M2: descriptores -> margen espiculado,0,random forest,val,252,SPICULATED,0.5828,0.5275,False
+M2: descriptores -> margen espiculado,4,regresión logística,val,252,SPICULATED,0.5522,0.5243,False
+M2: descriptores -> margen espiculado,4,random forest,val,252,SPICULATED,0.5892,0.5767,False
+M2: descriptores -> margen espiculado,-,clase mayoritaria,val,252,SPICULATED,0.5,0.5,False
+M2: descriptores -> margen espiculado,-,clase mayoritaria,test,361,SPICULATED,0.5,0.5,False
+M2: descriptores -> margen espiculado,4,random forest,test,361,SPICULATED,0.5003,0.5172,True
+P: patología <- solo descriptores,0,regresión logística,val,252,MALIGNANT,0.5254,0.5417,False
+P: patología <- solo descriptores,0,random forest,val,252,MALIGNANT,0.5488,0.5356,False
+P: patología <- solo descriptores,4,regresión logística,val,252,MALIGNANT,0.4967,0.515,False
+P: patología <- solo descriptores,4,random forest,val,252,MALIGNANT,0.554,0.5433,False
+P: patología <- solo descriptores,-,clase mayoritaria,val,252,MALIGNANT,0.5,0.5,False
+P: patología <- solo descriptores,-,clase mayoritaria,test,361,MALIGNANT,0.5,0.5,False
+P: patología <- solo descriptores,4,random forest,test,361,MALIGNANT,0.4699,0.466,True
+P: patología <- solo etiqueta de margen,-,regresión logística,val,252,MALIGNANT,0.8638,0.7728,False
+P: patología <- solo etiqueta de margen,-,random forest,val,252,MALIGNANT,0.8676,0.7728,False
+P: patología <- solo etiqueta de margen,-,clase mayoritaria,val,252,MALIGNANT,0.5,0.5,False
+P: patología <- solo etiqueta de margen,-,clase mayoritaria,test,361,MALIGNANT,0.5,0.5,False
+P: patología <- solo etiqueta de margen,-,random forest,test,361,MALIGNANT,0.782,0.7481,True
+P: patología <- descriptores + margen,0,regresión logística,val,252,MALIGNANT,0.8598,0.7737,False
+P: patología <- descriptores + margen,0,random forest,val,252,MALIGNANT,0.8504,0.7553,False
+P: patología <- descriptores + margen,4,regresión logística,val,252,MALIGNANT,0.8594,0.7737,False
+P: patología <- descriptores + margen,4,random forest,val,252,MALIGNANT,0.8433,0.7682,False
+P: patología <- descriptores + margen,-,clase mayoritaria,val,252,MALIGNANT,0.5,0.5,False
+P: patología <- descriptores + margen,-,clase mayoritaria,test,361,MALIGNANT,0.5,0.5,False
+P: patología <- descriptores + margen,0,regresión logística,test,361,MALIGNANT,0.8072,0.7434,True

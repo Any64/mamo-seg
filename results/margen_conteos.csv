@@ -1,0 +1,21 @@
+mass_margins,train,val,test,total,M1_circunscrito_vs_no,M2_espiculado
+CIRCUMSCRIBED,251,54,87,392,circunscrito,no espiculado
+ILL_DEFINED,218,60,92,370,no circunscrito,no espiculado
+SPICULATED,218,63,82,363,no circunscrito,espiculado
+OBSCURED,176,21,50,247,excluido,no espiculado
+MICROLOBULATED,83,25,21,129,no circunscrito,no espiculado
+(vacío),38,5,17,60,excluido,excluido
+ILL_DEFINED-SPICULATED,16,9,5,30,no circunscrito,espiculado
+CIRCUMSCRIBED-ILL_DEFINED,21,6,2,29,excluido,no espiculado
+OBSCURED-ILL_DEFINED,15,4,5,24,no circunscrito,no espiculado
+CIRCUMSCRIBED-OBSCURED,12,7,3,22,excluido,no espiculado
+OBSCURED-ILL_DEFINED-SPICULATED,3,1,1,5,no circunscrito,espiculado
+MICROLOBULATED-ILL_DEFINED,3,0,2,5,no circunscrito,no espiculado
+CIRCUMSCRIBED-OBSCURED-ILL_DEFINED,0,0,4,4,excluido,no espiculado
+OBSCURED-SPICULATED,4,0,0,4,no circunscrito,espiculado
+CIRCUMSCRIBED-MICROLOBULATED-ILL_DEFINED,0,0,3,3,excluido,no espiculado
+CIRCUMSCRIBED-MICROLOBULATED,1,0,1,2,excluido,no espiculado
+MICROLOBULATED-ILL_DEFINED-SPICULATED,0,2,0,2,no circunscrito,espiculado
+OBSCURED-CIRCUMSCRIBED,0,0,2,2,excluido,no espiculado
+MICROLOBULATED-SPICULATED,2,0,0,2,no circunscrito,espiculado
+CIRCUMSCRIBED-SPICULATED,0,0,1,1,excluido,espiculado
