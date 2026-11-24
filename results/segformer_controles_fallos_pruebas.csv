@@ -1,0 +1,17 @@
+conjunto,comparación,tipo,solo_falla_a,solo_falla_b,mcnemar_exacto_p
+val,SegFormer-B0 sin preentrenar vs U-Net,fallos,7,16,0.0931396484375
+val,SegFormer-B0 sin preentrenar vs U-Net,predicción vacía,0,9,0.00390625
+val,SegFormer-B0 sin preentrenar vs U-Net,otra zona sin solape,5,3,0.7265625
+val,SegFormer-B0 sin preentrenar vs U-Net,sub/sobresegmentación,5,7,0.7744140625
+test,SegFormer-B0 sin preentrenar vs U-Net,fallos,16,21,0.5113757815852296
+test,SegFormer-B0 sin preentrenar vs U-Net,predicción vacía,0,7,0.015625
+test,SegFormer-B0 sin preentrenar vs U-Net,otra zona sin solape,5,11,0.210113525390625
+test,SegFormer-B0 sin preentrenar vs U-Net,sub/sobresegmentación,24,16,0.26818725105476915
+val,SegFormer-B0 vs SegFormer-B0 sin preentrenar,fallos,7,3,0.34375
+val,SegFormer-B0 vs SegFormer-B0 sin preentrenar,predicción vacía,0,0,
+val,SegFormer-B0 vs SegFormer-B0 sin preentrenar,otra zona sin solape,10,2,0.03857421875
+val,SegFormer-B0 vs SegFormer-B0 sin preentrenar,sub/sobresegmentación,1,5,0.21875
+test,SegFormer-B0 vs SegFormer-B0 sin preentrenar,fallos,16,21,0.5113757815852296
+test,SegFormer-B0 vs SegFormer-B0 sin preentrenar,predicción vacía,0,0,
+test,SegFormer-B0 vs SegFormer-B0 sin preentrenar,otra zona sin solape,9,7,0.803619384765625
+test,SegFormer-B0 vs SegFormer-B0 sin preentrenar,sub/sobresegmentación,12,19,0.28104151505976915

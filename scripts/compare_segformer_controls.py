@@ -51,6 +51,28 @@ def history_row(runs_dir: Path, run: str) -> dict:
             "hay_nan": bool(h[["train_loss", "val_dice"]].isna().any().any())}
 
 
+def decomposition(summary: pd.DataFrame, tests: pd.DataFrame) -> pd.DataFrame:
+    """Desglose en tres escalones del Dice: U-Net → sin preentrenar (arquitectura) → preentrenado.
+
+    Las dos diferencias pareadas suman la ventaja total; la fracción es la de la estimación puntual.
+    """
+    rows = []
+    for split in SPLITS:
+        s = summary[summary["conjunto"] == split].set_index("método")["dice_media"]
+        t = tests[(tests["conjunto"] == split) & (tests["métrica"] == "dice")].set_index("comparación")
+        total = s[SEG] - s[UNET]
+        rows.append({"conjunto": split, "escalón": "U-Net", "dice_media": s[UNET]})
+        for label, comp in (("arquitectura (sin preentrenar − U-Net)", f"{SEG_S} − {UNET}"),
+                            ("preentrenamiento (preentrenado − sin preentrenar)", f"{SEG} − {SEG_S}")):
+            r = t.loc[comp]
+            rows.append({"conjunto": split, "escalón": label,
+                         "dice_media": s[SEG_S] if label.startswith("arq") else s[SEG],
+                         "delta": r["diferencia_media"], "ic95_inf_pacientes": r["ic95_inf_pacientes"],
+                         "ic95_sup_pacientes": r["ic95_sup_pacientes"], "wilcoxon_p": r["wilcoxon_p"],
+                         "fraccion_de_la_ventaja": r["diferencia_media"] / total})
+    return pd.DataFrame(rows)
+
+
 def plot_curves(runs_dir: Path, groups: dict, path: Path) -> None:
     fig, ax = plt.subplots(figsize=(7.5, 4))
     for name, runs in groups.items():
@@ -110,6 +132,9 @@ def main(argv=None):
     per_seed.round(4).to_csv(res / "segformer_controles_por_semilla.csv", index=False)
     tests = cs.paired_tests(pc, a.n_boot, cfg.seed)
     tests.to_csv(res / "segformer_controles_pruebas.csv", index=False)
+    steps = decomposition(summary, tests)
+    steps.to_csv(res / "segformer_controles_desglose.csv", index=False)
+    print(steps.round(4).to_string(index=False), "\n")
     counts, agg, ftests = cs.failure_tables(cs.failure_modes(by_method, data))
     agg.round(3).to_csv(res / "segformer_controles_fallos.csv", index=False)
     ftests.to_csv(res / "segformer_controles_fallos_pruebas.csv", index=False)

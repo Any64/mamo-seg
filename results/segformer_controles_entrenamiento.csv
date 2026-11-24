@@ -1,0 +1,7 @@
+ejecucion,arch,pretrained,lr,semilla,dice_val,epocas,mejor_epoca,segundos_por_epoca_mediana,hay_nan
+segformer_lr3e-4,segformer_b0,nvidia/mit-b0,0.0003,42,0.8091,24,14,28.911489486694336,False
+segformer_s43,segformer_b0,nvidia/mit-b0,0.0003,43,0.8106,27,17,29.05209183692932,False
+segformer_s44,segformer_b0,nvidia/mit-b0,0.0003,44,0.8094,32,22,33.95139718055725,False
+segformer_scratch_s42,segformer_b0,False,0.0003,42,0.7976,40,39,34.03364872932434,False
+segformer_scratch_s43,segformer_b0,False,0.0003,43,0.8064,40,40,27.747629761695862,False
+segformer_scratch_s44,segformer_b0,False,0.0003,44,0.7997,40,40,32.97957193851471,False
