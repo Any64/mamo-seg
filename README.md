@@ -312,3 +312,7 @@ independientes de la forma anotada. El emparejamiento recorte ↔ máscara ↔ f
 * Masci, J., Angulo, J., Schmidhuber, J. (2013). A learning framework for morphological operators using
   counter-harmonic mean. *ISMM 2013*, LNCS 7883, 329–340.
 * American College of Radiology (2025). ACR BI-RADS® Atlas, v2025.
+
+## Declaración de uso de inteligencia artificial
+
+En este proyecto se utilizaron asistentes de inteligencia artificial (Claude, de Anthropic, incluido Claude Code) como herramienta de apoyo para escribir y depurar parte del código. Las decisiones de diseño experimental, la ejecución de los experimentos, la verificación de los resultados y las conclusiones fueron revisadas y asumidas por la autora, Anielly Yañez Felicio, quien es responsable del contenido final.
